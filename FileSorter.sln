@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileSorter", "FileSorter2\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPF.Common", "WPF.Common\WPF.Common.csproj", "{EE256472-A098-4461-9C19-3FD5D43057B7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateSettingsSchema", "GenerateSettingsSchema\GenerateSettingsSchema.csproj", "{5AB826C8-7B38-41ED-8BA9-DB826E24C963}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,14 @@ Global
 		{EE256472-A098-4461-9C19-3FD5D43057B7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EE256472-A098-4461-9C19-3FD5D43057B7}.Release|x64.ActiveCfg = Release|x64
 		{EE256472-A098-4461-9C19-3FD5D43057B7}.Release|x64.Build.0 = Release|x64
+		{5AB826C8-7B38-41ED-8BA9-DB826E24C963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AB826C8-7B38-41ED-8BA9-DB826E24C963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AB826C8-7B38-41ED-8BA9-DB826E24C963}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5AB826C8-7B38-41ED-8BA9-DB826E24C963}.Debug|x64.Build.0 = Debug|Any CPU
+		{5AB826C8-7B38-41ED-8BA9-DB826E24C963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AB826C8-7B38-41ED-8BA9-DB826E24C963}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AB826C8-7B38-41ED-8BA9-DB826E24C963}.Release|x64.ActiveCfg = Release|Any CPU
+		{5AB826C8-7B38-41ED-8BA9-DB826E24C963}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

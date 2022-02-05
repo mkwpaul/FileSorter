@@ -5,10 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileSorter"
         xmlns:converters="clr-namespace:WPF.Common.Converters;assembly=WPF.Common"
-        xmlns:commands="clr-namespace:WPF.Common.Commands;assembly=WPF.Common"
+        xmlns:commands="clr-namespace:WPF.Common.Commands;assembly=WPF.Common" xmlns:controls="clr-namespace:WPF.Common.Controls;assembly=WPF.Common"
         mc:Ignorable="d"
+        xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
         Title="MainWindow" Height="450" Width="800"
+        x:Name="win"
         d:DataContext="{d:DesignData Type=local:MainViewModel, IsDesignTimeCreatable=True}">
+
+    <Window.Style>
+        <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}"/>
+    </Window.Style>
 
     <Window.DataContext>
         <local:MainViewModel/>
@@ -32,66 +38,66 @@
     
     
     
-    <DockPanel LastChildFill="True" Background="Transparent">
-        
-        <Border DockPanel.Dock="Bottom" Background="Red" Height="30" MaxHeight="100">
-            <DockPanel>
-                <Button Content="X" DockPanel.Dock="Right" Width="{Binding ActualHeight, RelativeSource={RelativeSource Self}}">
-                </Button>
-                <TextBlock Text="{Binding Path=Exception.Message}" Foreground="Black" FontSize="20" FontWeight="Bold"/>
-                
-            </DockPanel>
+    <DockPanel LastChildFill="True" Background="Transparent" x:Name="Main" >
+
+        <GroupBox DockPanel.Dock="Bottom"
+                  Visibility="Collapsed"
+                  Background="#660000"
+                  MinHeight="30" 
+                  MaxHeight="100"
+                  >
+            <!--
+                  Visibility="{Binding Path=Exception, Converter={StaticResource ToVisibilityCollapsed}}"
+            -->
             
-        </Border>
-        
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="3">
-            <Label Content="TargetFolder"/>
-            <TextBox Text="{Binding TargetFoldersFolder, Mode=TwoWay, Delay=300, UpdateSourceTrigger=PropertyChanged}" 
-                     />
+            <TextBlock 
+                Text="{Binding Path=Exception.Message}" 
+                FontSize="20" 
+                FontWeight="SemiBold"/>
+        </GroupBox>
 
+        <controls:ActionLogsCollectionPresenter LogsSource="{Binding Logs}" DockPanel.Dock="Bottom" MaxHeight="150"/>
 
-            <Label Content="SourceFolder"/>
-            <TextBox Text="{Binding SourceFolder, Mode=TwoWay, Delay=300, UpdateSourceTrigger=PropertyChanged}"/>
+        <GridSplitter DockPanel.Dock="Bottom" Height="5" ResizeDirection="Rows"/>
+
+        <GroupBox x:Name="TargetFoldersPanel"
+            DockPanel.Dock="Left">
+            <ListBox x:Name="folders"  ItemsSource="{Binding FilteredTargets}" SelectedItem="{Binding CurrentTargetFolder}"
+                         Margin="3">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel MaxWidth="300"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+        </GroupBox>
+
+        <StackPanel x:Name="SettingsPanel" DockPanel.Dock="Top" 
+            Orientation="Horizontal"
+            Margin="3"
+            HorizontalAlignment="Center">
+            
+            <GroupBox Margin="{adonisUi:Space Offset=3}" VerticalContentAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Label Content="Ask before Deletion" Margin="{adonisUi:Space HorizontalOffset=3}"/>
+                    <CheckBox IsChecked="{Binding Settings.AskBeforeFileDeletion}" Height="20" Width="30"/>
+                </StackPanel>
+            </GroupBox>
+            
+            <controls:PathControl Name="TargetFolder" Path="{Binding TargetFoldersFolder}"/>
+            <controls:PathControl Name="SourceFolder" Path="{Binding SourceFolder}"/>
+            <GroupBox Margin="{adonisUi:Space Offset=3}">
+                <TextBlock VerticalAlignment="Center">
+                    <Run>Files left: </Run>
+                    <Run><Binding Path="Files.Count" Mode="OneWay"/> </Run>
+                </TextBlock>
+            </GroupBox>
         </StackPanel>
 
-        <Expander DockPanel.Dock="Left" ExpandDirection="Right" IsExpanded="True">
-            <StackPanel Orientation="Horizontal" >
-                <ScrollViewer>
-                    <ItemsControl ItemsSource="{Binding TargetFolders}"/>
-                </ScrollViewer>
-                <ListBox x:Name="folders"  ItemsSource="{Binding FilteredTargets}" SelectedItem="{Binding CurrentTargetFolder}"/>
-            </StackPanel>
-        </Expander>
         
-        <Expander DockPanel.Dock="Right" ExpandDirection="Left" IsExpanded="False" MaxWidth="200">
-            <ScrollViewer>
-                <ItemsControl ItemsSource="{Binding Files}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Height="40" Width="40">
-                                <Image x:Name="img"  MaxHeight="40" MaxWidth="40" Focusable="True" IsHitTestVisible="True"
-                                    Source="{Binding Converter={StaticResource fileInfoToImage}}">
-                                </Image>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </Expander>
 
- 
-
-
-
-        <DockPanel Background="LightGray" >
-
-
-            <Grid DockPanel.Dock="Bottom">
+        <Grid x:Name="Toolbar"
+            DockPanel.Dock="Bottom">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -116,8 +122,20 @@
 
             </Grid>
 
-            <Border DockPanel.Dock="Bottom" Height="30">
-                <TextBox Text="{Binding SearchText, Mode=TwoWay, Delay=100, UpdateSourceTrigger=PropertyChanged}">
+        <GroupBox x:Name="MoveToPanel"
+            DockPanel.Dock="Top" Margin="{adonisUi:Space VerticalOffset=4}"
+            HorizontalAlignment="Center"
+            MinWidth="400"
+            >
+            <DockPanel>
+                <Label Content="Move To " 
+                       DockPanel.Dock="Left" 
+                       VerticalAlignment="Center" VerticalContentAlignment="Center"
+                       Padding="{adonisUi:Space HorizontalOffset=1}"
+                       />
+                <TextBox Text="{Binding SearchText, Mode=TwoWay, Delay=100, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource TextBoxDefaultStyle}"
+                         >
                     <TextBox.InputBindings>
                         
                         <KeyBinding Key="Up">
@@ -135,22 +153,33 @@
                         <KeyBinding Key="Return" Command="{Binding Commands.OnEnterCommand}"/>
                         <KeyBinding Key="Return" Modifiers="Shift" Command="{Binding Commands.CreateNewFolderFromSearchCommand}"/>
                         <KeyBinding Key="Right" Modifiers="Shift" Command="{Binding Commands.GoToNextCommand}"/>
+                        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding Commands.GoToNextCommand}"/>
                         <KeyBinding Key="Left" Modifiers="Shift" Command="{Binding Commands.GoToPreviousCommand}"/>
-                        <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding Commands.DeleteFileCommand}" 
-                                    CommandParameter="{Binding CurrentFile}"/>
-
-
+                        <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding Commands.DeleteFileCommand}" CommandParameter="{Binding CurrentFile}"/>
+                        <KeyBinding Key="D" Modifiers="Ctrl" Command="{Binding Commands.DeleteFileCommand}" CommandParameter="{Binding CurrentFile}"/>
                     </TextBox.InputBindings>
                 </TextBox>
-            </Border>
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            </DockPanel>
+
+        </GroupBox>
+
+
+        <StackPanel x:Name="ImageArea"
+            VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Label FontSize="80" Content="{Binding CurrentTargetFolder}" HorizontalAlignment="Center"/>
-                <Image MaxHeight="800" Focusable="True" IsHitTestVisible="True"
-                       Source="{Binding CurrentFile, Converter={StaticResource fileInfoToImage}}"/>
                 <Label Content="{Binding CurrentFile.Name}" HorizontalAlignment="Center" DockPanel.Dock="Bottom"/>
+                <Image MaxHeight="700" Focusable="True" IsHitTestVisible="True"
+                       Source="{Binding CurrentFile, Converter={StaticResource fileInfoToImage}}">
+                    <Image.ToolTip>
+                        <StackPanel>
+                            <TextBlock Text="{Binding CurrentFile.Name}"/>
+                            <TextBlock Text="{Binding CurrentFile.LastWriteTime}"/>
+                            <TextBlock Text="{Binding CurrentFile.Length, Converter={StaticResource byteCountFormatter}}"/>
+                        </StackPanel>
+                    </Image.ToolTip>
+                </Image>
                 
-            </StackPanel>
-        </DockPanel>
+        </StackPanel>
 
 
             

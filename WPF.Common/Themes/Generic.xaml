@@ -1,0 +1,149 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:WPF.Common"
+                    xmlns:controls="clr-namespace:WPF.Common.Controls"
+                    xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI" xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase">
+
+
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="pack://application:,,,/AdonisUI;component/ColorSchemes/Dark.xaml"/>
+        <ResourceDictionary Source="pack://application:,,,/AdonisUI.ClassicTheme;component/Resources.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <SolidColorBrush x:Key="MainBackground" Color="#36393f"/>
+    <SolidColorBrush x:Key="SecondaryBackground" Color="#2f3136"/>
+    <SolidColorBrush x:Key="TerciaryBackground" Color="#202225"/>
+    <SolidColorBrush x:Key="MainForeground" Color="#fafafa"/>
+    <SolidColorBrush x:Key="SecondaryForeground" Color="#8a8e92"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundWhite" Color="LightGray"/>
+
+    <Style TargetType="controls:PathControl">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="{adonisUi:Space Offset=3}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <!--
+        <Setter Property="BorderBrush" Value="{}"/>
+        -->
+        <Setter Property="MinWidth" Value="180"/>
+        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:PathControl">
+                    <ControlTemplate.Resources>
+                        <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource TextBoxDefaultStyle}">
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="MinWidth" Value="200"/>
+                        </Style>
+                    </ControlTemplate.Resources>
+
+                    <GroupBox BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}">
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <Label Content="{TemplateBinding Name}"
+                                   
+                                   
+                                   VerticalAlignment="Center"
+                                   Padding="{adonisUi:Space HorizontalOffset=1}"
+                                   BorderThickness="0"
+                                   />
+                            <TextBox BorderThickness="0"
+                                     VerticalAlignment="Stretch"
+                                     VerticalContentAlignment="Center"
+                                     AcceptsReturn="False"
+                                Text="{Binding Path=Path,
+                                    Mode=TwoWay,
+                                    Delay=300,
+                                    UpdateSourceTrigger=PropertyChanged,
+                                    RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                            <Button
+                                Background="{StaticResource TerciaryBackground}"
+                                BorderThickness="0"
+                                Command="{Binding OpenFileExplorerCommand, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                MinWidth="40"
+                                Content="..."/>
+
+                        </StackPanel>
+                    </GroupBox>
+                    
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="controls:ActionLogPresenter">
+        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="Visibility" Value="Visible"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:ActionLogPresenter">
+
+                    <ContentPresenter Content="{TemplateBinding ActionLog}">
+                        <ContentPresenter.Resources>
+                            <DataTemplate DataType="controls:ExceptionLog">
+                                <StackPanel Orientation="Horizontal" Background="#660000">
+                                    <TextBlock Text="{Binding Description}"/>
+                                    <TextBlock Text="{Binding Exception.Message}"/>
+                                </StackPanel>
+                            </DataTemplate>
+
+                            <DataTemplate DataType="controls:TaskLog">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Description}"/>
+                                    <TextBlock Text="{Binding Status}"/>
+                                    <TextBlock Text="{Binding Exception}"/>
+                                </StackPanel>
+                            </DataTemplate>
+
+                            <DataTemplate DataType="controls:SuccessLog">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Description}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                            
+                        </ContentPresenter.Resources>
+                    </ContentPresenter>
+                    
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=ActionLog.LogLevel}" Value="None">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </DataTrigger> 
+
+        </Style.Triggers>
+
+    </Style>
+
+    <Style TargetType="controls:ActionLogsCollectionPresenter">
+        <Setter Property="MinHeight" Value="50"/>
+        <Setter Property="MaxHeight" Value="150"/>
+        <Setter Property="Visibility" Value="Visible"/>
+        
+        <Setter Property="Margin" Value="3"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:ActionLogsCollectionPresenter}">
+
+                    <DockPanel Background="{TemplateBinding Background}">
+                        
+                        <ScrollViewer>
+                            <ItemsControl x:Name="PART_ItemsPresenter" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <controls:ActionLogPresenter ActionLog="{Binding}" HorizontalAlignment="Center"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -23,7 +23,7 @@ namespace WPF.Common.Converters
             };
         }
 
-        private Dictionary<string, object> _cache = new();
+        private readonly Dictionary<string, object> _cache = new();
 
         private object GetImageSourceFromFileInfo(string filePath, string extension)
         {
@@ -37,15 +37,7 @@ namespace WPF.Common.Converters
                 case ".jpeg":
                 case ".bmp":
                 case ".gif":
-                {
-                    var bmi = new BitmapImage();
-                    bmi.BeginInit();
-                    bmi.UriSource = new Uri(filePath);
-                    bmi.CacheOption = BitmapCacheOption.OnLoad;
-                    bmi.EndInit();
-                    _cache[filePath] = bmi;
-                    return bmi;
-                }
+                    return ReadImageToCache(filePath);
             }
 
             try
@@ -60,9 +52,29 @@ namespace WPF.Common.Converters
             }
             catch (FileNotFoundException ex)
             {
-
+                return ex;
             }
-            return filePath;
+            return null;
+        }
+
+        private BitmapImage ReadImageToCache(string filePath)
+        {
+            // Image Controls can load images directly by giving them the file path directly as source
+            // However when doing that they block the files from being nmoved or deleted
+            // Hence why we manually load them
+            var result = ReadImage(filePath);
+            _cache[filePath] = result;
+            return result;
+        }
+
+        private BitmapImage ReadImage(string filePath)
+        {
+            var bmi = new BitmapImage();
+            bmi.BeginInit();
+            bmi.UriSource = new Uri(filePath);
+            bmi.CacheOption = BitmapCacheOption.OnLoad;
+            bmi.EndInit();
+            return bmi;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

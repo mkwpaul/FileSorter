@@ -10,6 +10,7 @@ using Microsoft.VisualBasic.FileIO;
 using System.Windows;
 using WPF.Common;
 using Microsoft.WindowsAPICodePack.Shell;
+using WPF.Common.Controls;
 
 namespace FileSorter
 {
@@ -46,9 +47,6 @@ namespace FileSorter
                 return;
             if (Mv.SourceFolder is null)
                 return;
-            if (Mv.CurrentTargetFolder != null)
-                throw new InvalidOperationException();
-
 
             var newFolder = Mv.SearchText.EscapeFileName();
             var newFolderFull = Path.Combine(Mv.TargetFoldersFolder, newFolder);
@@ -58,20 +56,20 @@ namespace FileSorter
             try
             {
                 Directory.CreateDirectory(newFolderFull);
-                if (Directory.Exists(newFolderFull))
-                {
-
-                    Mv.TargetFolders?.Add(newFolder);
-                }
             }
             catch (IOException io)
             {
                 Mv.Exception = io;
             }
 
-            answer = MessageBox.Show("Do you want to move the current file there?", "Question", MessageBoxButton.YesNo);
-            if (answer == MessageBoxResult.Yes)
-                MoveToTargetFolder();
+            if (Directory.Exists(newFolderFull))
+            {
+                Mv.TargetFolders?.Add(newFolder);
+                Mv.CurrentTargetFolder = newFolder;
+                answer = MessageBox.Show("Do you want to move the current file there?", "Question", MessageBoxButton.YesNo);
+                if (answer == MessageBoxResult.Yes)
+                    MoveToTargetFolder();
+            }
         }
 
         private void OnEnter()
@@ -94,11 +92,13 @@ namespace FileSorter
                 return;
             if (string.IsNullOrEmpty(Mv.CurrentTargetFolder))
                 return;
+
+            string currentTarget = Mv.CurrentTargetFolder;
             if (string.IsNullOrWhiteSpace(Mv.TargetFoldersFolder))
                 return;
 
-            var newFullPath = Path.Combine(Mv.TargetFoldersFolder, Mv.CurrentTargetFolder, Mv.CurrentFile.Name);
-            var fileInfo = Mv.CurrentFile;
+            var newFullPath = Path.Combine(Mv.TargetFoldersFolder, currentTarget, Mv.CurrentFile.Name);
+            var file = Mv.CurrentFile;
 
             int tryCount = 0;
             while (tryCount < 3)
@@ -113,21 +113,25 @@ namespace FileSorter
                             case MessageBoxResult.Yes:
                                 break;
                             case MessageBoxResult.No:
-                                DeleteFile(fileInfo);
+                                DeleteFile(file);
                                 break;
                             case MessageBoxResult.Cancel:
                                 return;
                         }
                     }
-                        
-                    File.Move(fileInfo.FullName, newFullPath, true);
+
+                    File.Move(file.FullName, newFullPath, true);
                     Mv.RemoveCurrentFile();
+                    var log = $"Moved {file.Name} from {file.Directory} to {currentTarget}".LogSuccess();
+                    Mv.Logs.Add(log);
+                    Mv.Log = log;
                     Mv.Exception = null;
                     return;
                 }
                 catch (IOException ex)
                 {
                     Mv.Exception = ex;
+                    Mv.Logs.Add(ex.Log());
                     tryCount++;
                     await Task.Delay(1000);
                 }
@@ -137,34 +141,40 @@ namespace FileSorter
             MessageBox.Show($"Move success: {Path.GetFileName(newFullPath)} {moveSucces}");
         }
 
-
-
-        private async void DeleteFile(FileInfo file)
+        private async void DeleteFile(FileInfo file) => DeleteFile(file, false);
+        private async void DeleteFile(FileInfo file, bool skipDialog)
         {
             if (file is null)
                 return;
 
-            var answer = MessageBox.Show("Are you sure you want to delete?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
-            if (answer != MessageBoxResult.Yes)
-                return;
+            if (!skipDialog && Mv.Settings.AskBeforeFileDeletion)
+            {
+                var answer = MessageBox.Show("Are you sure you want to delete?",
+                    "Confirmation",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Exclamation);
 
-            Mv.Files?.Remove(file);
-            Mv.CurrentFileIndex = Mv.CurrentFileIndex;
-            Mv.CurrentFile = Mv.Files?[Mv.CurrentFileIndex];
+                if (answer != MessageBoxResult.Yes)
+                    return;
+            }
 
             int tryCount = 0;
             while (tryCount < 10)
             {
                 try
                 {
+                    GoToNextFile();
                     await Task.Delay(1000);
                     FileSystem.DeleteFile(file.FullName, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                    Mv.RemoveFile(file);
                     Mv.Exception = null;
+                    Mv.Logs.Add($"Deleted {file.Name}".LogSuccess());
                     return;
                 }
                 catch (Exception ex)
                 {
                     Mv.Exception = ex;
+                    Mv.Logs.Add(ex.Log());
                     tryCount++;
                 }
             }
@@ -178,8 +188,6 @@ namespace FileSorter
             if (!File.Exists(file.FullName))
                 return;
 
-            // combine the arguments together
-            // it doesn't matter if there is a space after ','
             string argument = $"/select, \"{file.FullName}\"";
             Process.Start("explorer.exe", argument);
         }

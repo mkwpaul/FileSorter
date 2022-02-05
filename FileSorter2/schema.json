@@ -1,0 +1,20 @@
+﻿{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Settings",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SourceFolder": {
+      "type": "string"
+    },
+    "TargetFoldersFolder": {
+      "type": "string"
+    },
+    "AskBeforeFileDeletion": {
+      "description": "Flag to enable or disable the MessageBox asking for confirmation before deleting a file",
+      "type": "boolean",
+      "default": true
+    }
+
+  }
+}

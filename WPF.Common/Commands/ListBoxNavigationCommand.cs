@@ -19,7 +19,7 @@ namespace WPF.Common.Commands
     public class ListBoxNavigationCommand : Command
     {
         public bool WrapNavigation { get; set; } = true;
-        public NavigationDirection Direction { get; set; } 
+        public NavigationDirection Direction { get; set; }
 
         public ListBox? ListBox { get; set; }
 

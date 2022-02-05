@@ -9,6 +9,7 @@ using System.ComponentModel;
 using WPF.Common;
 using System.Windows.Data;
 using System.Collections.Specialized;
+using WPF.Common.Controls;
 
 namespace FileSorter
 {
@@ -17,7 +18,7 @@ namespace FileSorter
         private string _searchText;
         private FileInfo? _currentFilePath;
         private string? _targetFoldersFolder;
-        public Exception? _targetFolderIssue;
+        public Exception? _Exception;
         private ObservableCollection<string>? _targetFolders;
         private string? _sourceFolder;
         private ObservableCollection<FileInfo>? _files;
@@ -26,15 +27,19 @@ namespace FileSorter
         private int _currentFileIndex;
         private string? _currentTargetFolder;
 
+        public Commands Commands { get; }
 
-        public Commands Commands { get; } 
+        public Settings Settings { get; set; }
 
         public MainViewModel()
         {
             PropertyChanged += OnPropertyChanged;
             collectionView = new();
             collectionView.IsLiveFilteringRequested = true;
+            collectionView.IsLiveSortingRequested = true;
             Commands = new Commands(this);
+
+            this.LoadSettings();
         }
 
         private bool Filter(object o)
@@ -58,10 +63,10 @@ namespace FileSorter
                     CurrentTargetFolder = temp;
                     break;
                 case nameof(TargetFoldersFolder):
-                    ReadTargetFoldersFolder(TargetFoldersFolder);
+                    this.ReadTargetFoldersFolder();
                     break;
                 case nameof(SourceFolder):
-                    ReadSourceFolder(SourceFolder);
+                    this.ReadSourceFolder();
                     break;
                 case nameof(TargetFolders):
                     collectionView.Source = TargetFolders;
@@ -70,7 +75,6 @@ namespace FileSorter
                     break;
                 case nameof(SearchText):
                     collectionView.View?.Refresh();
-                    
                     Commands.SelectFirstFolder();
                     break;
                 case nameof(CurrentFileIndex):
@@ -85,51 +89,9 @@ namespace FileSorter
             }
         }
 
-        private void ReadSourceFolder(string? sourceFolder)
-        {
-            if (sourceFolder == null)
-            {
-                Files = null;
-                CurrentFile = null;
-                return;
-            }
-            try
-            {
-                Exception = null;
-                Files = Directory.GetFiles(sourceFolder)
-                    .Select(f => new FileInfo(f))
-                    .ToObservable();
-                CurrentFile = Files.FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                Exception = ex;
-            }
-        }
-
-        private void ReadTargetFoldersFolder(string? path)
-        {
-            if (path == null)
-            {
-                TargetFolders = null;
-                return;
-            }
-            try
-            {
-                Exception = null;
-                TargetFolders = Directory.GetDirectories(path)
-                    .Select(x => Path.GetRelativePath(path, x))
-                    .ToObservable();
-            }
-            catch (Exception ex)
-            {
-                Exception = ex;
-            }
-        }
-
         public int CurrentFileIndex
         {
-            get => _currentFileIndex.Upperlimit(Files?.Count - 1 ?? 0).LowerLimit(0);
+            get => _currentFileIndex.LowerLimit(0).Upperlimit(Files?.Count - 1 ?? 0);
             set
             {
                 value = value.Upperlimit(Files?.Count - 1 ?? 0).LowerLimit(0);
@@ -151,8 +113,8 @@ namespace FileSorter
 
         public Exception? Exception
         {
-            get => _targetFolderIssue;
-            set => SetProperty(ref _targetFolderIssue, value);
+            get => _Exception;
+            set => SetProperty(ref _Exception, value);
         }
 
         public ObservableCollection<string>? TargetFolders
@@ -172,7 +134,6 @@ namespace FileSorter
         {
             collectionView.View?.Refresh();
         }
-
 
         public string? CurrentTargetFolder
         {
@@ -196,6 +157,15 @@ namespace FileSorter
         {
             get => _files;
             set => SetProperty(ref _files, value);
+        }
+
+        public ObservableCollection<IActionLog> Logs { get; } = new();
+
+        public IActionLog _Log;
+        public IActionLog Log
+        {
+            get => _Log;
+            set => SetProperty(ref _Log, value);
         }
 
         public string SearchText
