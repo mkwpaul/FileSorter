@@ -1,16 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WPF.Common;
-using WPF.Common.Controls;
+using Microsoft.Extensions.Logging;
 
 namespace FileSorter
 {
     internal static class MainModule
     {
+        public static void SaveToDiskOnChanged(this MainViewModel mv, object? sender, PropertyChangedEventArgs _)
+        {
+            if (sender is not Settings settings)
+                return;
+
+            var task = SettingsReader.SafeToDisk(settings);
+            mv.Logs.Log(task, "Saving Settings to Disk", LogLevel.None);
+        }
+
         public static void RemoveCurrentFile(this MainViewModel mv) => mv.RemoveFile(mv.CurrentFile);
         public static void RemoveFile(this MainViewModel mv, FileInfo? info)
         {
@@ -28,22 +38,6 @@ namespace FileSorter
                 else
                     mv.CurrentFile = null;
             }
-            return;
-        }
-
-        public static async Task LoadSettings(this MainViewModel mv)
-        {
-            var settings = await SettingsReader.GetSettingsFromFile();
-            if (settings != null)
-            {
-                mv.Settings = settings;
-                mv.SourceFolder = settings.SourceFolder;
-                mv.TargetFoldersFolder = settings.TargetFoldersFolder;
-            }
-            else
-            {
-                mv.Settings = new Settings();
-            }
         }
 
         public static Task WriteSettings(this MainViewModel mv)
@@ -51,9 +45,7 @@ namespace FileSorter
             return SettingsReader.SafeToDisk(mv.Settings);
         }
 
-
-
-        public static void ReadTargetFoldersFolder(this MainViewModel mv) => mv.ReadTargetFoldersFolder(mv.TargetFoldersFolder);
+        public static void ReadTargetFoldersFolder(this MainViewModel mv) => mv.ReadTargetFoldersFolder(mv.Settings.TargetFoldersFolder);
         public static void ReadTargetFoldersFolder(this MainViewModel mv, string? path)
         {
             if (path == null)
@@ -63,20 +55,18 @@ namespace FileSorter
             }
             try
             {
-                mv.Exception = null;
                 mv.TargetFolders = Directory.GetDirectories(path)
-                    .Select(x => Path.GetRelativePath(path, x))
-                    .OrderBy(x => x.Length)
+                    .Select(x => new DirectoryInfo(x))
+                    .OrderBy(x => x.Name.Length)
                     .ToObservable();
             }
             catch (Exception ex)
             {
-                mv.Exception = ex;
-                mv.Logs.Add(ex.Log());
+                mv.Logs.Log(ex);
             }
         }
 
-        public static void ReadSourceFolder(this MainViewModel mv) => mv.ReadSourceFolder(mv.SourceFolder);
+        public static void ReadSourceFolder(this MainViewModel mv) => mv.ReadSourceFolder(mv.Settings.SourceFolder);
         public static void ReadSourceFolder(this MainViewModel mv, string? sourceFolder)
         {
             if (sourceFolder == null)
@@ -87,7 +77,6 @@ namespace FileSorter
             }
             try
             {
-                mv.Exception = null;
                 mv.Files = Directory.GetFiles(sourceFolder)
                     .Select(f => new FileInfo(f))
                     .OrderBy(x => x.Name, StringComparer.Ordinal)
@@ -96,11 +85,19 @@ namespace FileSorter
             }
             catch (Exception ex)
             {
-                mv.Exception = ex;
-                mv.Logs.Add(ex.Log());
+                mv.Logs.Log(ex);
             }
         }
 
+        public static bool Filter(this MainViewModel mv, object o)
+        {
+            if (o is not DirectoryInfo dicInfo)
+                return false;
 
+            if (string.IsNullOrWhiteSpace(mv.SearchText))
+                return true;
+
+            return dicInfo.Name.Contains(mv.SearchText, StringComparison.CurrentCultureIgnoreCase);
+        }
     }
 }

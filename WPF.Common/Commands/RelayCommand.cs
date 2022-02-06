@@ -33,7 +33,7 @@ namespace WPF.Common.Commands
 
     public class RelayCommand : RelayCommand<object>
     {
-        public RelayCommand(Action action, Func<bool> func = null!) : base(x => action(), x => func == null || func())
+        public RelayCommand(Action action, Func<bool> func = null!) : base(_ => action(), _ => func == null || func())
         {
         }
     }

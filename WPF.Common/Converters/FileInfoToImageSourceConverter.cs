@@ -1,11 +1,6 @@
 ﻿using Microsoft.WindowsAPICodePack.Shell;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
@@ -13,7 +8,7 @@ namespace WPF.Common.Converters
 {
     public class FileInfoToImageSourceConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value switch
             {
@@ -25,7 +20,7 @@ namespace WPF.Common.Converters
 
         private readonly Dictionary<string, object> _cache = new();
 
-        private object GetImageSourceFromFileInfo(string filePath, string extension)
+        private object? GetImageSourceFromFileInfo(string filePath, string extension)
         {
             if (_cache.TryGetValue(filePath, out var result) && File.Exists(filePath))
                 return result;
@@ -45,16 +40,13 @@ namespace WPF.Common.Converters
                 using var shellFile = ShellFile.FromFilePath(filePath);
                 var source = shellFile?.Thumbnail?.ExtraLargeBitmapSource;
                 if (source is not null)
-                {
                     _cache[filePath] = source;
-                    return source;
-                }
+                return source;
             }
             catch (FileNotFoundException ex)
             {
                 return ex;
             }
-            return null;
         }
 
         private BitmapImage ReadImageToCache(string filePath)
@@ -67,7 +59,7 @@ namespace WPF.Common.Converters
             return result;
         }
 
-        private BitmapImage ReadImage(string filePath)
+        private static BitmapImage ReadImage(string filePath)
         {
             var bmi = new BitmapImage();
             bmi.BeginInit();

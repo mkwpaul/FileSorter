@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Data;
 
 namespace WPF.Common.Converters
@@ -15,7 +10,6 @@ namespace WPF.Common.Converters
         {
             return ToBool(value);
         }
-
 
         public static bool ToBool(object obj)
         {

@@ -1,18 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
+﻿using System.Globalization;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WPF.Common.Converters
 {
@@ -20,15 +7,14 @@ namespace WPF.Common.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-
-            switch (value)
+            return value switch
             {
-                case int i: return SizeSuffix(i);
-                case long l: return SizeSuffix(l);
-                case double d: return SizeSuffix((long)d);
-                case decimal n: return SizeSuffix((long)n);
-                default: return value;
-            }
+                int i => SizeSuffix(i),
+                long l => SizeSuffix(l),
+                double d => SizeSuffix((long)d),
+                decimal n => SizeSuffix((long)n),
+                _ => value,
+            };
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -40,13 +26,13 @@ namespace WPF.Common.Converters
 
         static string SizeSuffix(long value, int decimalPlaces = 3)
         {
-            if (decimalPlaces < 0) 
+            if (decimalPlaces < 0)
                 throw new ArgumentOutOfRangeException(nameof(decimalPlaces));
 
-            if (value < 0) 
+            if (value < 0)
                 return "-" + SizeSuffix(-value, decimalPlaces);
 
-            if (value == 0) 
+            if (value == 0)
                 return string.Format("{0:n" + decimalPlaces + "} bytes", 0);
 
             int mag = (int)Math.Log(value, 1024);

@@ -1,35 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel;
 using WPF.Common;
 using System.Windows.Data;
 using System.Collections.Specialized;
-using WPF.Common.Controls;
 
 namespace FileSorter
 {
     public class MainViewModel : PropertyChangedNotifier
     {
-        private string _searchText;
+        private string _searchText = "";
         private FileInfo? _currentFilePath;
-        private string? _targetFoldersFolder;
-        public Exception? _Exception;
-        private ObservableCollection<string>? _targetFolders;
-        private string? _sourceFolder;
+        private ObservableCollection<DirectoryInfo>? _targetFolders;
         private ObservableCollection<FileInfo>? _files;
         private ICollectionView? _filteredTargets;
-        private CollectionViewSource collectionView;
+        private readonly CollectionViewSource collectionView;
         private int _currentFileIndex;
-        private string? _currentTargetFolder;
+        private DirectoryInfo? _currentTargetFolder;
+        private Settings settings;
+
+        public ObservableCollection<IActionLog> Logs { get; } = new();
 
         public Commands Commands { get; }
 
-        public Settings Settings { get; set; }
+        public Settings Settings
+        {
+            get => settings;
+            set
+            {
+                if (settings != null)
+                {
+                    settings.PropertyChanged -= FowardNotification;
+                    settings.PropertyChanged -= this.SaveToDiskOnChanged;
+                }
+                SetProperty(ref settings!, value);
+                if (settings != null)
+                {
+                    settings.PropertyChanged += this.SaveToDiskOnChanged;
+                    settings.PropertyChanged += FowardNotification;
+                }
+            }
+        }
 
         public MainViewModel()
         {
@@ -39,18 +50,9 @@ namespace FileSorter
             collectionView.IsLiveSortingRequested = true;
             Commands = new Commands(this);
 
-            this.LoadSettings();
-        }
-
-        private bool Filter(object o)
-        {
-            if (o is not string s)
-                return false;
-
-            if (string.IsNullOrWhiteSpace(SearchText))
-                return true;
-
-            return s.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase);
+            Settings = settings = SettingsReader.GetSettingsFromFile() ?? new Settings();
+            this.ReadSourceFolder();
+            this.ReadTargetFoldersFolder();
         }
 
         private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -62,15 +64,15 @@ namespace FileSorter
                     SearchText = "";
                     CurrentTargetFolder = temp;
                     break;
-                case nameof(TargetFoldersFolder):
+                case nameof(Settings.TargetFoldersFolder):
                     this.ReadTargetFoldersFolder();
                     break;
-                case nameof(SourceFolder):
+                case nameof(Settings.SourceFolder):
                     this.ReadSourceFolder();
                     break;
                 case nameof(TargetFolders):
                     collectionView.Source = TargetFolders;
-                    collectionView.View.Filter = Filter;
+                    collectionView.View.Filter = this.Filter;
                     FilteredTargets = collectionView.View;
                     break;
                 case nameof(SearchText):
@@ -78,13 +80,7 @@ namespace FileSorter
                     Commands.SelectFirstFolder();
                     break;
                 case nameof(CurrentFileIndex):
-
-                    if (Files is null)
-                        return;
-                    if (Files.Count == 0)
-                        CurrentFile = null;
-                    else
-                        CurrentFile = Files[CurrentFileIndex];
+                    CurrentFile = Files?.Count > 0 ? Files![CurrentFileIndex] : null;
                     break;
             }
         }
@@ -105,19 +101,7 @@ namespace FileSorter
             set => SetProperty(ref _currentFilePath, value);
         }
 
-        public string? TargetFoldersFolder
-        {
-            get => _targetFoldersFolder;
-            set => SetProperty(ref _targetFoldersFolder, value);
-        }
-
-        public Exception? Exception
-        {
-            get => _Exception;
-            set => SetProperty(ref _Exception, value);
-        }
-
-        public ObservableCollection<string>? TargetFolders
+        public ObservableCollection<DirectoryInfo>? TargetFolders
         {
             get => _targetFolders;
             set
@@ -127,15 +111,15 @@ namespace FileSorter
                 SetProperty(ref _targetFolders, value);
                 if (_targetFolders != null)
                     _targetFolders.CollectionChanged += OnTargetFoldersContentChanged;
+
+                void OnTargetFoldersContentChanged(object? sender, NotifyCollectionChangedEventArgs e)
+                {
+                    collectionView.View?.Refresh();
+                }
             }
         }
 
-        private void OnTargetFoldersContentChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            collectionView.View?.Refresh();
-        }
-
-        public string? CurrentTargetFolder
+        public DirectoryInfo? CurrentTargetFolder
         {
             get => _currentTargetFolder;
             set => SetProperty(ref _currentTargetFolder, value);
@@ -147,25 +131,10 @@ namespace FileSorter
             set => SetProperty(ref _filteredTargets, value);
         }
 
-        public string? SourceFolder
-        {
-            get => _sourceFolder;
-            set => SetProperty(ref _sourceFolder, value);
-        }
-
         public ObservableCollection<FileInfo>? Files
         {
             get => _files;
             set => SetProperty(ref _files, value);
-        }
-
-        public ObservableCollection<IActionLog> Logs { get; } = new();
-
-        public IActionLog _Log;
-        public IActionLog Log
-        {
-            get => _Log;
-            set => SetProperty(ref _Log, value);
         }
 
         public string SearchText

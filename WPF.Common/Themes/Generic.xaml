@@ -2,21 +2,13 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:WPF.Common"
                     xmlns:controls="clr-namespace:WPF.Common.Controls"
-                    xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI" xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase">
-
-
+                    xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI" 
+                    xmlns:componentmodel="clr-namespace:System.ComponentModel;assembly=WindowsBase">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/AdonisUI;component/ColorSchemes/Dark.xaml"/>
         <ResourceDictionary Source="pack://application:,,,/AdonisUI.ClassicTheme;component/Resources.xaml"/>
     </ResourceDictionary.MergedDictionaries>
-
-    <SolidColorBrush x:Key="MainBackground" Color="#36393f"/>
-    <SolidColorBrush x:Key="SecondaryBackground" Color="#2f3136"/>
-    <SolidColorBrush x:Key="TerciaryBackground" Color="#202225"/>
-    <SolidColorBrush x:Key="MainForeground" Color="#fafafa"/>
-    <SolidColorBrush x:Key="SecondaryForeground" Color="#8a8e92"/>
-    <SolidColorBrush x:Key="SecondaryBackgroundWhite" Color="LightGray"/>
 
     <Style TargetType="controls:PathControl">
         <Setter Property="Padding" Value="0"/>
@@ -51,13 +43,14 @@
                                      VerticalAlignment="Stretch"
                                      VerticalContentAlignment="Center"
                                      AcceptsReturn="False"
+                                     local:Attach.SelectAllOnEntry="True"
                                 Text="{Binding Path=Path,
                                     Mode=TwoWay,
                                     Delay=300,
                                     UpdateSourceTrigger=PropertyChanged,
                                     RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
                             <Button
-                                Background="{StaticResource TerciaryBackground}"
+                                Background="{DynamicResource {x:Static adonisUi:Brushes.Layer1BackgroundBrush}}"
                                 BorderThickness="0"
                                 Command="{Binding OpenFileExplorerCommand, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                 MinWidth="40"
@@ -71,34 +64,59 @@
         </Setter>
     </Style>
 
-    <Style TargetType="controls:ActionLogPresenter">
+    <Style TargetType="controls:LogEntryPresenter">
         <Setter Property="MinHeight" Value="30"/>
         <Setter Property="Visibility" Value="Visible"/>
+        <Setter Property="Padding" Value="6"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="controls:ActionLogPresenter">
+                <ControlTemplate TargetType="controls:LogEntryPresenter">
 
                     <ContentPresenter Content="{TemplateBinding ActionLog}">
                         <ContentPresenter.Resources>
-                            <DataTemplate DataType="controls:ExceptionLog">
-                                <StackPanel Orientation="Horizontal" Background="#660000">
-                                    <TextBlock Text="{Binding Description}"/>
-                                    <TextBlock Text="{Binding Exception.Message}"/>
+                            <DataTemplate DataType="{x:Type local:ExceptionLog}">
+                                <StackPanel Orientation="Vertical" Background="{DynamicResource {x:Static adonisUi:Colors.ErrorColor}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Width="100" Content="Description:"/>
+                                        <Label Content="{Binding Description}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Width="100" Content="Exception:"/>
+                                        <TextBlock Text="{Binding Exception.Message}"/>
+                                    </StackPanel>
+                                    <!--
+                                        <TextBlock Text="{Binding Exception.StackTrace}"/>
+                                    -->
                                 </StackPanel>
                             </DataTemplate>
 
-                            <DataTemplate DataType="controls:TaskLog">
-                                <StackPanel Orientation="Horizontal">
+                            <DataTemplate DataType="{x:Type local:TaskLog}">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <TextBlock Text="{Binding Description}"/>
                                     <TextBlock Text="{Binding Status}"/>
                                     <TextBlock Text="{Binding Exception}"/>
                                 </StackPanel>
                             </DataTemplate>
 
-                            <DataTemplate DataType="controls:SuccessLog">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Description}"/>
-                                </StackPanel>
+                            <DataTemplate DataType="{x:Type local:SuccessLog}">
+                                <Grid
+                                    Background="{Binding Background,
+                                        RelativeSource={RelativeSource AncestorType={x:Type controls:LogEntryPresenter}}}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Label Content="Description: " HorizontalAlignment="Left"/>
+                                    <Label Content="Time: " HorizontalAlignment="Left" Grid.Row="1"/>
+                                    <TextBlock Text="{Binding Description}" Grid.Column="1" HorizontalAlignment="Left" TextAlignment="Left" />
+                                    <TextBlock Text="{Binding Time, StringFormat=H:mm:ss}" Grid.Row="1" Grid.Column="1"/>
+                                </Grid>
+                                
                             </DataTemplate>
                             
                         </ContentPresenter.Resources>
@@ -113,29 +131,45 @@
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=ActionLog.LogLevel}" Value="None">
                 <Setter Property="Visibility" Value="Collapsed"/>
             </DataTrigger> 
-
         </Style.Triggers>
 
     </Style>
 
-    <Style TargetType="controls:ActionLogsCollectionPresenter">
-        <Setter Property="MinHeight" Value="50"/>
-        <Setter Property="MaxHeight" Value="150"/>
+    <Style TargetType="controls:LogView">
         <Setter Property="Visibility" Value="Visible"/>
-        
-        <Setter Property="Margin" Value="3"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type controls:ActionLogsCollectionPresenter}">
+                <ControlTemplate TargetType="{x:Type controls:LogView}">
 
                     <DockPanel Background="{TemplateBinding Background}">
                         
-                        <ScrollViewer>
-                            <ItemsControl x:Name="PART_ItemsPresenter" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <ScrollViewer VerticalAlignment="Stretch">
+                            <ItemsControl 
+                                x:Name="PART_ItemsPresenter"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                AlternationCount="2"
+                                >
 
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <controls:ActionLogPresenter ActionLog="{Binding}" HorizontalAlignment="Center"/>
+                                        <Border x:Name="presenter" HorizontalAlignment="Stretch">
+                                            <controls:LogEntryPresenter  ActionLog="{Binding}" HorizontalAlignment="Left" Padding="10"/>
+                                        </Border>
+
+                                        <DataTemplate.Triggers>
+                                            <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                                                <Setter TargetName="presenter" Property="Background" 
+                                                        Value="{DynamicResource {x:Static adonisUi:Brushes.Layer2BackgroundBrush}}"/>
+                                            </Trigger>
+                                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
+                                                <Setter TargetName="presenter" Property="Background"
+                                                        Value="{DynamicResource {x:Static adonisUi:Brushes.Layer3BackgroundBrush}}"/>
+                                            </Trigger>
+                                        </DataTemplate.Triggers>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

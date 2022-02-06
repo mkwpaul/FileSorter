@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.VisualBasic.FileIO;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WPF.Common.Commands;
-using System.Diagnostics;
-using Microsoft.VisualBasic.FileIO;
-using System.Windows;
 using WPF.Common;
-using Microsoft.WindowsAPICodePack.Shell;
-using WPF.Common.Controls;
+using WPF.Common.Commands;
 
 namespace FileSorter
 {
@@ -45,29 +39,33 @@ namespace FileSorter
         {
             if (string.IsNullOrWhiteSpace(Mv.SearchText))
                 return;
-            if (Mv.SourceFolder is null)
+            if (Mv.Settings.SourceFolder is null)
+                return;
+            if (Mv.Settings.TargetFoldersFolder is null)
                 return;
 
             var newFolder = Mv.SearchText.EscapeFileName();
-            var newFolderFull = Path.Combine(Mv.TargetFoldersFolder, newFolder);
-            var answer = MessageBox.Show($"Do you want to create a new Folder at: \n\n {newFolderFull}", "Question", MessageBoxButton.YesNo);
-            if (answer != MessageBoxResult.Yes)
+            var newFolderFull = Path.Combine(Mv.Settings.TargetFoldersFolder, newFolder);
+
+            if (!DoesUserWantTo.CreateFolder(newFolderFull))
                 return;
             try
             {
                 Directory.CreateDirectory(newFolderFull);
+                Mv.Logs.Log($"Created new Folder at {newFolderFull}");
             }
             catch (IOException io)
             {
-                Mv.Exception = io;
+                Mv.Logs.Log(io, $"Create new Folder at {newFolderFull}");
             }
 
             if (Directory.Exists(newFolderFull))
             {
-                Mv.TargetFolders?.Add(newFolder);
-                Mv.CurrentTargetFolder = newFolder;
-                answer = MessageBox.Show("Do you want to move the current file there?", "Question", MessageBoxButton.YesNo);
-                if (answer == MessageBoxResult.Yes)
+                var newDicInfo = new DirectoryInfo(newFolderFull);
+                Mv.TargetFolders?.Add(newDicInfo);
+                Mv.CurrentTargetFolder = newDicInfo;
+
+                if (DoesUserWantTo.MoveFileToNewFolder())
                     MoveToTargetFolder();
             }
         }
@@ -82,101 +80,69 @@ namespace FileSorter
 
         public void SelectFirstFolder()
         {
-            var entry = Mv.FilteredTargets?.OfType<string>().FirstOrDefault();
+            var entry = Mv.FilteredTargets?.OfType<DirectoryInfo>().FirstOrDefault();
             Mv.CurrentTargetFolder = entry;
         }
 
-        private async void MoveToTargetFolder()
+        private void MoveToTargetFolder()
         {
             if (Mv.CurrentFile is null)
                 return;
-            if (string.IsNullOrEmpty(Mv.CurrentTargetFolder))
+            if (Mv.CurrentTargetFolder is null)
                 return;
 
-            string currentTarget = Mv.CurrentTargetFolder;
-            if (string.IsNullOrWhiteSpace(Mv.TargetFoldersFolder))
-                return;
-
-            var newFullPath = Path.Combine(Mv.TargetFoldersFolder, currentTarget, Mv.CurrentFile.Name);
+            var currentTarget = Mv.CurrentTargetFolder;
+            var newFullPath = Path.Combine(currentTarget.FullName, Mv.CurrentFile.Name);
             var file = Mv.CurrentFile;
 
-            int tryCount = 0;
-            while (tryCount < 3)
+            if (File.Exists(newFullPath))
             {
-                try
+                var answer = DoesUserWantTo.ReactToFileCollision(newFullPath);
+                switch (answer)
                 {
-                    if (File.Exists(newFullPath))
-                    {
-                        var answer = MessageBox.Show($"A file alerady exists at {newFullPath}. Do you want to override it?", "Question", MessageBoxButton.YesNoCancel);
-                        switch (answer)
-                        {
-                            case MessageBoxResult.Yes:
-                                break;
-                            case MessageBoxResult.No:
-                                DeleteFile(file);
-                                break;
-                            case MessageBoxResult.Cancel:
-                                return;
-                        }
-                    }
-
-                    File.Move(file.FullName, newFullPath, true);
-                    Mv.RemoveCurrentFile();
-                    var log = $"Moved {file.Name} from {file.Directory} to {currentTarget}".LogSuccess();
-                    Mv.Logs.Add(log);
-                    Mv.Log = log;
-                    Mv.Exception = null;
-                    return;
-                }
-                catch (IOException ex)
-                {
-                    Mv.Exception = ex;
-                    Mv.Logs.Add(ex.Log());
-                    tryCount++;
-                    await Task.Delay(1000);
+                    case FileCollisionReaction.Overwrite:
+                        break;
+                    case FileCollisionReaction.Delete:
+                        DeleteFile(file, true);
+                        return;
+                    case FileCollisionReaction.Cancel:
+                        return;
                 }
             }
 
-            bool moveSucces = File.Exists(newFullPath);
-            MessageBox.Show($"Move success: {Path.GetFileName(newFullPath)} {moveSucces}");
+            try
+            {
+                File.Move(file.FullName, newFullPath, true);
+                Mv.RemoveCurrentFile();
+                Mv.Logs.Log($"Moved {file.Name} from {file.Directory} to {currentTarget}");
+            }
+            catch (IOException ex)
+            {
+                Mv.Logs.Log(ex);
+            }
         }
 
-        private async void DeleteFile(FileInfo file) => DeleteFile(file, false);
-        private async void DeleteFile(FileInfo file, bool skipDialog)
+        private void DeleteFile(FileInfo file) => DeleteFile(file, false);
+        private void DeleteFile(FileInfo file, bool skipDialog)
         {
             if (file is null)
                 return;
 
-            if (!skipDialog && Mv.Settings.AskBeforeFileDeletion)
+            if (!skipDialog && Mv.Settings.AskBeforeFileDeletion && DoesUserWantTo.DeleteFile())
             {
-                var answer = MessageBox.Show("Are you sure you want to delete?",
-                    "Confirmation",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Exclamation);
-
-                if (answer != MessageBoxResult.Yes)
-                    return;
+                return;
             }
 
-            int tryCount = 0;
-            while (tryCount < 10)
+            GoToNextFile();
+            try
             {
-                try
-                {
-                    GoToNextFile();
-                    await Task.Delay(1000);
-                    FileSystem.DeleteFile(file.FullName, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
-                    Mv.RemoveFile(file);
-                    Mv.Exception = null;
-                    Mv.Logs.Add($"Deleted {file.Name}".LogSuccess());
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Mv.Exception = ex;
-                    Mv.Logs.Add(ex.Log());
-                    tryCount++;
-                }
+                FileSystem.DeleteFile(file.FullName, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                Mv.RemoveFile(file);
+                Mv.Logs.Log($"Deleted {file.Name}");
+            }
+            catch (Exception ex)
+            {
+                Mv.Logs.Log(ex);
             }
         }
 

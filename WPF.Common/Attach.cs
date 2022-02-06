@@ -37,10 +37,23 @@ namespace WPF.Common
         {
             if (d is not TextBox textbox)
                 return;
-            textbox.GotKeyboardFocus += Textbox_GotKeyboardFocus;
+            textbox.GotFocus += Textbox_GotKeyboardFocus;
+            textbox.PreviewMouseDown += IgnoreMouse;
         }
 
-        private static void Textbox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        private static void IgnoreMouse(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not TextBox textbox)
+                return;
+
+            if (!textbox.IsKeyboardFocused)
+            {
+                textbox.Focus();
+                e.Handled = true;
+            }
+        }
+
+        private static void Textbox_GotKeyboardFocus(object sender, RoutedEventArgs e)
         {
             if (sender is not TextBox textBox)
                 return;

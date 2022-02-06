@@ -1,6 +1,6 @@
 ﻿{
   "$schema": "./schema.json",
+  "AskBeforeFileDeletion": false,
   "SourceFolder": "I:\\Users\\Paul\\Collection\\unsorted",
-  "TargetFoldersFolder": "I:\\Users\\Paul\\Collection\\sort",
-  "AskBeforeFileDeletion": false
+  "TargetFoldersFolder": "I:\\Users\\Paul\\Collection\\sort"
 }

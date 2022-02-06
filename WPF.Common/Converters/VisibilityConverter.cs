@@ -27,7 +27,6 @@ namespace WPF.Common.Converters
         public abstract Visibility FalseVisibility { get; }
     }
 
-
     public class ToVisibilityCollapsed : VisibilityConverter
     {
         public override Visibility FalseVisibility => Visibility.Collapsed;

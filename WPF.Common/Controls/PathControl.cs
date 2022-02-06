@@ -1,9 +1,5 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -31,7 +27,7 @@ namespace WPF.Common.Controls
 
         public static readonly DependencyProperty PathProperty = DependencyProperty.Register
         (
-            "Path",
+            nameof(Path),
             typeof(string),
             typeof(PathControl),
             new FrameworkPropertyMetadata
@@ -70,8 +66,11 @@ namespace WPF.Common.Controls
 
         public void OpenFileExplorer()
         {
-            var dlg = new CommonOpenFileDialog();
-            dlg.IsFolderPicker = FileType == FileType.Directory;
+            var dlg = new CommonOpenFileDialog
+            {
+                IsFolderPicker = FileType == FileType.Directory
+            };
+
             if (!string.IsNullOrWhiteSpace(Path))
                 dlg.DefaultFileName = Path;
 
@@ -87,6 +86,5 @@ namespace WPF.Common.Controls
                     break;
             }
         }
-
     }
 }

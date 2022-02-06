@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using WPF.Common;
 
@@ -39,19 +34,19 @@ namespace FileSorter
     {
         public static string GetSettingsFilePath() => Path.Combine(Directory.GetCurrentDirectory(), "settings.json");
 
-        public static readonly JsonSerializerOptions options = new JsonSerializerOptions
+        public static readonly JsonSerializerOptions options = new()
         {
             WriteIndented = true,
             AllowTrailingCommas = true,
         };
 
-        public static async Task<Settings?> GetSettingsFromFile()
+        public static Settings? GetSettingsFromFile()
         {
             var filePath = GetSettingsFilePath();
             if (!File.Exists(filePath))
                 return null;
 
-            string json = await File.ReadAllTextAsync(filePath);
+            string json = File.ReadAllText(filePath);
 
             try
             {

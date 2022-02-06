@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Markup;
 
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
 
@@ -7,7 +8,6 @@ using System.Windows;
 // defined in this file are now automatically added during build and populated with
 // values defined in project properties. For details of which attributes are included
 // and how to customise this process see: https://aka.ms/assembly-info-properties
-
 
 // Setting ComVisible to false makes the types in this assembly not visible to COM
 // components.  If you need to access a type in this assembly from COM, set the ComVisible
@@ -18,3 +18,9 @@ using System.Windows;
 // The following GUID is for the ID of the typelib if this project is exposed to COM.
 
 [assembly: Guid("08362d8d-3d82-4844-a2f6-829969049f39")]
+
+[assembly: XmlnsPrefix("common", "common")]
+[assembly: XmlnsDefinition("common", "WPF.Common")]
+[assembly: XmlnsDefinition("common", "WPF.Common.Commands")]
+[assembly: XmlnsDefinition("common", "WPF.Common.Controls")]
+[assembly: XmlnsDefinition("common", "WPF.Common.Converters")]

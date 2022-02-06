@@ -12,19 +12,7 @@ namespace WPF.Common
 {
     public abstract class PropertyChangedNotifier : INotifyPropertyChanged
     {
-        public Type Type { get; }
-        public HashSet<string> PropertyNames { get; }
-
         public event PropertyChangedEventHandler? PropertyChanged;
-
-        private readonly PropertyInfo[] propertyInfos;
-
-        protected PropertyChangedNotifier()
-        {
-            Type = GetType();
-            propertyInfos = Type.GetProperties();
-            PropertyNames = propertyInfos.Select(x => x.Name).ToHashSet();
-        }
 
         protected void NotifyPropertyChanged(string propertyName)
         {
@@ -39,7 +27,9 @@ namespace WPF.Common
                     return;
             }
             else if (t.Equals(value))
+            {
                 return;
+            }
 
             t = value;
             NotifyPropertyChanged(propertyName);
@@ -50,8 +40,7 @@ namespace WPF.Common
             if (e.PropertyName is null)
                 return;
 
-            if (PropertyNames.Contains(e.PropertyName))
-                NotifyPropertyChanged(e.PropertyName);
+            NotifyPropertyChanged(e.PropertyName);
         }
     }
 }

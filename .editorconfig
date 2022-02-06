@@ -1,0 +1,16 @@
+﻿[*.cs]
+
+# CA1068: CancellationToken parameters must come last
+dotnet_diagnostic.CA1068.severity = warning
+csharp_style_prefer_switch_expression=true:warning
+csharp_style_var_for_built_in_types=true:silent
+csharp_style_var_when_type_is_apparent=true:silent
+csharp_style_var_elsewhere=true:silent
+csharp_style_prefer_pattern_matching=true:silent
+csharp_style_pattern_matching_over_as_with_null_check=true:error
+
+[*.{cs,vb}]
+dotnet_style_qualification_for_field=false:suggestion
+dotnet_style_explicit_tuple_names=true:error
+dotnet_diagnostic.CA2011.severity=warning
+dotnet_style_operator_placement_when_wrapping=end_of_line
