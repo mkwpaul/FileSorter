@@ -1,9 +1,5 @@
 ﻿using AdonisUI.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace FileSorter
 {
@@ -24,11 +20,12 @@ namespace FileSorter
             return answer;
         }
 
-        public static void SetDefault(this MessageBoxModel model, object id)
+        private static void SetDefault(this MessageBoxModel model, object id)
         {
-            var yesBtn = model.Buttons.FirstOrDefault(x => x.Id.Equals(id));
-            if (yesBtn != null)
-                yesBtn.IsDefault = true;
+            var defaultBtn = model.Buttons.FirstOrDefault(x => x.Id.Equals(id));
+            Debug.Assert(defaultBtn != null);
+            if (defaultBtn != null)
+                defaultBtn.IsDefault = true;
         }
 
         public static bool MoveFileToNewFolder()
@@ -66,7 +63,7 @@ namespace FileSorter
             {
                 Caption = "Question",
                 Text = $"A file already exists at {newFullPath}. What do you want to do?",
-                Buttons = new List<IMessageBoxButtonModel>
+                Buttons = new IMessageBoxButtonModel[]
                 {
                      MessageBoxButtons.Custom("Overwrite File", FileCollisionReaction.Overwrite),
                      MessageBoxButtons.Custom("Delete current File", FileCollisionReaction.Delete),
@@ -82,8 +79,19 @@ namespace FileSorter
 
     public enum FileCollisionReaction
     {
+        /// <summary>
+        /// Cancel the Process of Moving the file, deleting no files.
+        /// </summary>
         Cancel,
+
+        /// <summary>
+        /// Overwrite the already existing file with the file that's about to move
+        /// </summary>
         Overwrite,
+
+        /// <summary>
+        /// Keep the existing file at the target destination and delete the file that was supposed to move
+        /// </summary>
         Delete,
     }
 }

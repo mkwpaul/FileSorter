@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WPF.Common;
-
-namespace WPF.Common.Commands
+﻿namespace WPF.Common.Commands
 {
     public class RelayCommand<T> : Command
     {
         private readonly Action<T> action;
         private readonly Func<T, bool>? predicate;
-
+         
         public RelayCommand(Action<T> action, Func<T, bool>? predicate = null)
         {
             this.action = action ?? throw new ArgumentException(null, nameof(action));

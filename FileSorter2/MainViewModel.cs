@@ -7,10 +7,11 @@ using System.Collections.Specialized;
 
 namespace FileSorter
 {
-    public class MainViewModel : PropertyChangedNotifier
+    public partial class MainViewModel : PropertyChangedNotifier
     {
         private string _searchText = "";
-        private FileInfo? _currentFilePath;
+
+        private FileInfo? _currentFile;
         private ObservableCollection<DirectoryInfo>? _targetFolders;
         private ObservableCollection<FileInfo>? _files;
         private ICollectionView? _filteredTargets;
@@ -59,7 +60,7 @@ namespace FileSorter
         {
             switch (e.PropertyName)
             {
-                case nameof(CurrentFile):
+                 case nameof(CurrentFile):
                     var temp = CurrentTargetFolder;
                     SearchText = "";
                     CurrentTargetFolder = temp;
@@ -85,6 +86,7 @@ namespace FileSorter
             }
         }
 
+
         public int CurrentFileIndex
         {
             get => _currentFileIndex.LowerLimit(0).Upperlimit(Files?.Count - 1 ?? 0);
@@ -97,8 +99,8 @@ namespace FileSorter
 
         public FileInfo? CurrentFile
         {
-            get => _currentFilePath;
-            set => SetProperty(ref _currentFilePath, value);
+            get => _currentFile;
+            set => SetProperty(ref _currentFile, value);
         }
 
         public ObservableCollection<DirectoryInfo>? TargetFolders

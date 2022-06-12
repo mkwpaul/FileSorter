@@ -58,7 +58,7 @@
                              Margin="3">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel MaxWidth="300"/>
+                            <WrapPanel Width="300" MinWidth="300"/>
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
 

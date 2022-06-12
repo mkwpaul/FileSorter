@@ -1,4 +1,5 @@
 ﻿using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -20,7 +21,7 @@ namespace WPF.Common.Controls
         {
             SortedLogs = new();
             SortedLogs.IsLiveSortingRequested = true;
-            var sort = new System.ComponentModel.SortDescription(nameof(IActionLog.Time), System.ComponentModel.ListSortDirection.Descending);
+            var sort = new SortDescription(nameof(IActionLog.Time), ListSortDirection.Descending);
             SortedLogs.SortDescriptions.Add(sort);
         }
 

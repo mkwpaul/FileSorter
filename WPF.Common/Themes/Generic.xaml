@@ -75,7 +75,7 @@
                     <ContentPresenter Content="{TemplateBinding ActionLog}">
                         <ContentPresenter.Resources>
                             <DataTemplate DataType="{x:Type local:ExceptionLog}">
-                                <StackPanel Orientation="Vertical" Background="{DynamicResource {x:Static adonisUi:Colors.ErrorColor}}">
+                                <StackPanel Orientation="Vertical" Background="{DynamicResource {x:Static adonisUi:Brushes.ErrorBrush}}">
                                     <StackPanel Orientation="Horizontal">
                                         <Label Width="100" Content="Description:"/>
                                         <Label Content="{Binding Description}"/>
@@ -178,6 +178,33 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type controls:FilePresenter}">
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:FilePresenter}">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                        <Label FontSize="80" Content="{Binding FileInfo.Directory}" HorizontalAlignment="Center"/>
+                        <Label Content="{Binding CurrentFile.Name}" HorizontalAlignment="Center"/>
+                        <Image MaxHeight="700" Focusable="True" IsHitTestVisible="True" >
+                            <Image.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding FileInfo.Name}"/>
+                                    <TextBlock Text="{Binding FileInfo.LastWriteTime}"/>
+                                    <TextBlock Text="{Binding FileInfo.Length, Converter={StaticResource byteCountFormatter}}"/>
+                                </StackPanel>
+                            </Image.ToolTip>
+                        </Image>
+
+                    </StackPanel>
+                </ControlTemplate>
+                
+            </Setter.Value>
+        </Setter>
+        
     </Style>
 
 </ResourceDictionary>

@@ -1,8 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
-using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Windows;
 using WPF.Common;
 using WPF.Common.Commands;
 
@@ -12,14 +11,14 @@ namespace FileSorter
     {
         public MainViewModel Mv { get; }
 
-        public RelayCommand GoToNextCommand { get; }
-        public RelayCommand GoToPreviousCommand { get; }
-        public RelayCommand<FileInfo> DeleteFileCommand { get; }
-        public RelayCommand<FileInfo> OpenInExplorerCommand { get; }
-        public RelayCommand MoveToTargetFolderCommand { get; }
-        public RelayCommand SelectFirstFolderCommand { get; }
-        public RelayCommand CreateNewFolderFromSearchCommand { get; }
-        public RelayCommand? OnEnterCommand { get; }
+        public Command GoToNextCommand { get; }
+        public Command GoToPreviousCommand { get; }
+        public Command DeleteFileCommand { get; }
+        public Command OpenInExplorerCommand { get; }
+        public Command MoveToTargetFolderCommand { get; }
+        public Command SelectFirstFolderCommand { get; }
+        public Command CreateNewFolderFromSearchCommand { get; }
+        public Command OnEnterCommand { get; }
 
         public Commands(MainViewModel mv)
         {
@@ -95,30 +94,46 @@ namespace FileSorter
             var newFullPath = Path.Combine(currentTarget.FullName, Mv.CurrentFile.Name);
             var file = Mv.CurrentFile;
 
-            if (File.Exists(newFullPath))
-            {
-                var answer = DoesUserWantTo.ReactToFileCollision(newFullPath);
-                switch (answer)
-                {
-                    case FileCollisionReaction.Overwrite:
-                        break;
-                    case FileCollisionReaction.Delete:
-                        DeleteFile(file, true);
-                        return;
-                    case FileCollisionReaction.Cancel:
-                        return;
-                }
-            }
+            bool cancel = CheckForFileConflict(newFullPath, file);
+            if (cancel)
+                return;
 
-            try
+            GoToNextFile();
+            Task.Run(() =>
             {
-                File.Move(file.FullName, newFullPath, true);
-                Mv.RemoveCurrentFile();
-                Mv.Logs.Log($"Moved {file.Name} from {file.Directory} to {currentTarget}");
-            }
-            catch (IOException ex)
+                try
+                {
+                    File.Move(file.FullName, newFullPath, true);
+                    Mv.RemoveFile(file);
+
+                    Application.Current.Dispatcher.InvokeAsync(() =>
+                        Mv.Logs.Log($"Moved {file.Name} from {file.Directory} to {currentTarget}"));
+                }
+                catch (IOException ex)
+                {
+                    Application.Current.Dispatcher.InvokeAsync(() =>
+                        Mv.Logs.Log(ex));
+                }
+            });
+        }
+
+        private bool CheckForFileConflict(string newFullPath, FileInfo file)
+        {
+            if (!File.Exists(newFullPath))
+                return false;
+
+            var answer = DoesUserWantTo.ReactToFileCollision(newFullPath);
+            switch (answer)
             {
-                Mv.Logs.Log(ex);
+                case FileCollisionReaction.Overwrite:
+                    return false;
+                case FileCollisionReaction.Delete:
+                    DeleteFile(file, true);
+                    return true;
+                case FileCollisionReaction.Cancel:
+                    return true;
+                default:
+                    throw new NotImplementedException();
             }
         }
 
@@ -158,10 +173,20 @@ namespace FileSorter
             Process.Start("explorer.exe", argument);
         }
 
+        public static void GoToPreviousFile(IList<FileInfo> files, int currentIndex, Action<int> setIndex)
+        {
+            if (files is null || files.Count == 0)
+                return;
+             
+            int newIndex = (currentIndex == 0) ? files.Count - 1 : currentIndex - 1;
+            setIndex(newIndex);
+        }
+
         private void GoToPreviousFile()
         {
             if (Mv.Files is null || Mv.Files.Count == 0)
                 return;
+
             int newIndex = Mv.CurrentFileIndex - 1;
             Mv.CurrentFileIndex = newIndex < 0 ? Mv.Files.Count - 1 : newIndex;
         }

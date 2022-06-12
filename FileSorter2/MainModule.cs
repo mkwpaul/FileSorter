@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WPF.Common;
 using Microsoft.Extensions.Logging;
 
@@ -53,6 +48,7 @@ namespace FileSorter
                 mv.TargetFolders = null;
                 return;
             }
+
             try
             {
                 mv.TargetFolders = Directory.GetDirectories(path)
@@ -75,6 +71,7 @@ namespace FileSorter
                 mv.CurrentFile = null;
                 return;
             }
+
             try
             {
                 mv.Files = Directory.GetFiles(sourceFolder)

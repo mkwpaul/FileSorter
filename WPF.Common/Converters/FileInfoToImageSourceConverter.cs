@@ -8,6 +8,8 @@ namespace WPF.Common.Converters
 {
     public class FileInfoToImageSourceConverter : IValueConverter
     {
+        private readonly Dictionary<string, BitmapSource> _cache = new();
+
         public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value switch
@@ -18,9 +20,35 @@ namespace WPF.Common.Converters
             };
         }
 
-        private readonly Dictionary<string, object> _cache = new();
+        public Task<BitmapSource> ConvertAsync(string filePath, CancellationToken token = default)
+        {
+            if (_cache.TryGetValue(filePath, out var result) && File.Exists(filePath))
+                return Task.FromResult(result);
 
-        private object? GetImageSourceFromFileInfo(string filePath, string extension)
+            return Task.Run(() =>
+            {
+                switch (Path.GetExtension(filePath).ToLower())
+                {
+                    case ".png":
+                    case ".jpg":
+                    case ".jpeg":
+                    case ".bmp":
+                    case ".gif":
+                        return ReadImageToCache(filePath);
+                }
+
+                using var shellFile = ShellFile.FromFilePath(filePath);
+                var source = shellFile?.Thumbnail?.ExtraLargeBitmapSource;
+                if (source is not null)
+                {
+                    _cache[filePath] = source;
+                    return source;
+                }
+
+                return new BitmapImage();
+            }, token);
+        }
+        private object GetImageSourceFromFileInfo(string filePath, string extension)
         {
             if (_cache.TryGetValue(filePath, out var result) && File.Exists(filePath))
                 return result;
