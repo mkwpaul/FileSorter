@@ -143,7 +143,7 @@ namespace FileSorter
             if (file is null)
                 return;
 
-            if (!skipDialog && Mv.Settings.AskBeforeFileDeletion && DoesUserWantTo.DeleteFile())
+            if (!skipDialog && Mv.Settings.AskBeforeFileDeletion && !DoesUserWantTo.DeleteFile())
             {
                 return;
             }

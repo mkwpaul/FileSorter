@@ -75,12 +75,12 @@
                     <ContentPresenter Content="{TemplateBinding ActionLog}">
                         <ContentPresenter.Resources>
                             <DataTemplate DataType="{x:Type local:ExceptionLog}">
-                                <StackPanel Orientation="Vertical" Background="{DynamicResource {x:Static adonisUi:Brushes.ErrorBrush}}">
-                                    <StackPanel Orientation="Horizontal">
+                                <StackPanel Orientation="Vertical" Background="#FFAA0000" HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Horizontal" Margin="3">
                                         <Label Width="100" Content="Description:"/>
                                         <Label Content="{Binding Description}"/>
                                     </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Margin="3">
                                         <Label Width="100" Content="Exception:"/>
                                         <TextBlock Text="{Binding Exception.Message}"/>
                                     </StackPanel>
@@ -91,7 +91,7 @@
                             </DataTemplate>
 
                             <DataTemplate DataType="{x:Type local:TaskLog}">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="4">
                                     <TextBlock Text="{Binding Description}"/>
                                     <TextBlock Text="{Binding Status}"/>
                                     <TextBlock Text="{Binding Exception}"/>
@@ -156,8 +156,8 @@
 
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border x:Name="presenter" HorizontalAlignment="Stretch">
-                                            <controls:LogEntryPresenter  ActionLog="{Binding}" HorizontalAlignment="Left" Padding="10"/>
+                                        <Border x:Name="presenter" HorizontalAlignment="Stretch" Margin="3">
+                                            <controls:LogEntryPresenter  ActionLog="{Binding}" HorizontalAlignment="Stretch" Padding="10"/>
                                         </Border>
 
                                         <DataTemplate.Triggers>
