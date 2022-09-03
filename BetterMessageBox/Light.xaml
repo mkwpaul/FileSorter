@@ -1,0 +1,142 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:presentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:root="clr-namespace:BetterMessageBox">
+
+    <!-- colors -->
+
+    <Color x:Key="{x:Static root:KnownColor.AccentColor}">#5080d8</Color>
+    <Color x:Key="{x:Static root:KnownColor.AccentHighlightColor}">#6C9CF6</Color>
+    <Color x:Key="{x:Static root:KnownColor.AccentIntenseHighlightColor}">#85AFFF</Color>
+    <Color x:Key="{x:Static root:KnownColor.AccentIntenseHighlightBorderColor}">#85AFFF</Color>
+    <Color x:Key="{x:Static root:KnownColor.AccentInteractionColor}">#568AE9</Color>
+    <Color x:Key="{x:Static root:KnownColor.AccentInteractionBorderColor}">#568AE9</Color>
+    <DynamicResource x:Key="{x:Static root:KnownColor.AccentInteractionForegroundColor}" ResourceKey="{x:Static root:KnownColor.AccentForegroundColor}"/>
+
+    <Color x:Key="{x:Static root:KnownColor.Layer0BackgroundColor}">#ffffff</Color>
+    <!--
+    <helpers:ResourceAlias x:Key="{x:Static root:KnownColor.Layer0BorderColor}" ResourceKey="{x:Static SystemParameters.WindowGlassColor}"/>
+    -->
+
+    <Color x:Key="{x:Static root:KnownColor.Layer1BackgroundColor}">#ededed</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer1BorderColor}">#c4c4c4</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer1HighlightColor}">#f4f4f4</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer1HighlightBorderColor}">#b0b0b0</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer1IntenseHighlightColor}">#fcfcfc</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer1IntenseHighlightBorderColor}">#606060</Color>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer1InteractionColor}" ResourceKey="{x:Static root:KnownColor.AccentColor}"/>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer1InteractionBorderColor}" ResourceKey="{x:Static root:KnownColor.AccentColor}"/>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer1InteractionForegroundColor}" ResourceKey="{x:Static root:KnownColor.AccentForegroundColor}"/>
+    
+    <Color x:Key="{x:Static root:KnownColor.Layer2BackgroundColor}">#f6f6f6</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer2BorderColor}">#c0c0c0</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer2HighlightColor}">#f4f4f4</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer2HighlightBorderColor}">#808080</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer2IntenseHighlightColor}">#ffffff</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer2IntenseHighlightBorderColor}">#606060</Color>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer2InteractionColor}" ResourceKey="{x:Static root:KnownColor.AccentColor}"/>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer2InteractionBorderColor}" ResourceKey="{x:Static root:KnownColor.AccentColor}"/>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer2InteractionForegroundColor}" ResourceKey="{x:Static root:KnownColor.AccentForegroundColor}"/>
+
+    <Color x:Key="{x:Static root:KnownColor.Layer3BackgroundColor}">#e8e8e8</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer3BorderColor}">#c8c8c8</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer3HighlightColor}">#f6f6f6</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer3HighlightBorderColor}">#808080</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer3IntenseHighlightColor}">#ffffff</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer3IntenseHighlightBorderColor}">#606060</Color>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer3InteractionColor}" ResourceKey="{x:Static root:KnownColor.AccentColor}"/>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer3InteractionBorderColor}" ResourceKey="{x:Static root:KnownColor.AccentColor}"/>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer3InteractionForegroundColor}" ResourceKey="{x:Static root:KnownColor.AccentForegroundColor}"/>
+
+    <Color x:Key="{x:Static root:KnownColor.Layer4BackgroundColor}">#f4f4f4</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer4BorderColor}">#c0c0c0</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer4HighlightColor}">#f4f4f4</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer4HighlightBorderColor}">#929292</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer4IntenseHighlightColor}">#ffffff</Color>
+    <Color x:Key="{x:Static root:KnownColor.Layer4IntenseHighlightBorderColor}">#606060</Color>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer4InteractionColor}" ResourceKey="{x:Static root:KnownColor.AccentColor}"/>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer4InteractionBorderColor}" ResourceKey="{x:Static root:KnownColor.AccentColor}"/>
+    <DynamicResource x:Key="{x:Static root:KnownColor.Layer4InteractionForegroundColor}" ResourceKey="{x:Static root:KnownColor.AccentForegroundColor}"/>
+
+    <Color x:Key="{x:Static root:KnownColor.ForegroundColor}">#000000</Color>
+    <Color x:Key="{x:Static root:KnownColor.AccentForegroundColor}">#ffffff</Color>
+
+    <Color x:Key="{x:Static root:KnownColor.DisabledForegroundColor}">#808080</Color>
+    <Color x:Key="{x:Static root:KnownColor.DisabledAccentForegroundColor}">#d3d3d3</Color>
+
+    <Color x:Key="{x:Static root:KnownColor.SuccessColor}">#00b94e</Color>
+    <Color x:Key="{x:Static root:KnownColor.ErrorColor}">#dd2c00</Color>
+    <Color x:Key="{x:Static root:KnownColor.AlertColor}">#ffa000</Color>
+    <Color x:Key="{x:Static root:KnownColor.HyperlinkColor}">#0645ad</Color>
+
+    <Color x:Key="{x:Static root:KnownColor.WindowButtonHighlightColor}">#e5e5e5</Color>
+    <Color x:Key="{x:Static root:KnownColor.WindowButtonInteractionColor}">#cacaca</Color>
+
+    <!-- brushes -->
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AccentBrush}" Color="{DynamicResource {x:Static root:KnownColor.AccentColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AccentHighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.AccentHighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AccentIntenseHighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.AccentIntenseHighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AccentIntenseHighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.AccentIntenseHighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AccentInteractionBrush}" Color="{DynamicResource {x:Static root:KnownColor.AccentInteractionColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AccentInteractionBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.AccentInteractionBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AccentInteractionForegroundBrush}" Color="{StaticResource {x:Static root:KnownColor.AccentInteractionForegroundColor}}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer0BackgroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer0BackgroundColor}}" presentationOptions:Freeze="True"/>
+    <helpers:ResourceAlias x:Key="{x:Static root:Brushes.Layer0BorderBrush}" ResourceKey="{x:Static SystemParameters.WindowGlassBrush}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1BackgroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer1BackgroundColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1BorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer1BorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1HighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer1HighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1HighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer1HighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1IntenseHighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer1IntenseHighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1IntenseHighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer1IntenseHighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1InteractionBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer1InteractionColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1InteractionBorderBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer1InteractionBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer1InteractionForegroundBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer1InteractionForegroundColor}}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2BackgroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer2BackgroundColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2BorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer2BorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2HighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer2HighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2HighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer2HighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2IntenseHighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer2IntenseHighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2IntenseHighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer2IntenseHighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2InteractionBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer2InteractionColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2InteractionBorderBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer2InteractionBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer2InteractionForegroundBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer2InteractionForegroundColor}}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3BackgroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer3BackgroundColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3BorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer3BorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3HighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer3HighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3HighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer3HighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3IntenseHighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer3IntenseHighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3IntenseHighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer3IntenseHighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3InteractionBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer3InteractionColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3InteractionBorderBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer3InteractionBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer3InteractionForegroundBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer3InteractionForegroundColor}}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4BackgroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer4BackgroundColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4BorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer4BorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4HighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer4HighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4HighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer4HighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4IntenseHighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer4IntenseHighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4IntenseHighlightBorderBrush}" Color="{DynamicResource {x:Static root:KnownColor.Layer4IntenseHighlightBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4InteractionBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer4InteractionColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4InteractionBorderBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer4InteractionBorderColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.Layer4InteractionForegroundBrush}" Color="{StaticResource {x:Static root:KnownColor.Layer4InteractionForegroundColor}}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.ForegroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.ForegroundColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AccentForegroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.AccentForegroundColor}}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.DisabledForegroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.DisabledForegroundColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.DisabledAccentForegroundBrush}" Color="{DynamicResource {x:Static root:KnownColor.DisabledAccentForegroundColor}}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.SuccessBrush}" Color="{DynamicResource {x:Static root:KnownColor.SuccessColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.ErrorBrush}" Color="{DynamicResource {x:Static root:KnownColor.ErrorColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.AlertBrush}" Color="{DynamicResource {x:Static root:KnownColor.AlertColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.HyperlinkBrush}" Color="{DynamicResource {x:Static root:KnownColor.HyperlinkColor}}" presentationOptions:Freeze="True"/>
+
+    <SolidColorBrush x:Key="{x:Static root:Brushes.WindowButtonHighlightBrush}" Color="{DynamicResource {x:Static root:KnownColor.WindowButtonHighlightColor}}" presentationOptions:Freeze="True"/>
+    <SolidColorBrush x:Key="{x:Static root:Brushes.WindowButtonInteractionBrush}" Color="{DynamicResource {x:Static root:KnownColor.WindowButtonInteractionColor}}" presentationOptions:Freeze="True"/>
+
+</ResourceDictionary>

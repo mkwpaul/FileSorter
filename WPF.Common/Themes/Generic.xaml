@@ -14,9 +14,6 @@
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Margin" Value="{adonisUi:Space Offset=3}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <!--
-        <Setter Property="BorderBrush" Value="{}"/>
-        -->
         <Setter Property="MinWidth" Value="180"/>
         <Setter Property="MinHeight" Value="30"/>
         <Setter Property="Template">
@@ -64,6 +61,46 @@
         </Setter>
     </Style>
 
+    <DataTemplate DataType="{x:Type local:ExceptionLog}">
+        <StackPanel Orientation="Vertical" Background="#FFAA0000" HorizontalAlignment="Stretch">
+            <StackPanel Orientation="Horizontal" Margin="3">
+                <Label Width="100" Content="Description:"/>
+                <Label Content="{Binding Description}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="3">
+                <Label Width="100" Content="Exception:"/>
+                <TextBlock Text="{Binding Exception.Message}"/>
+            </StackPanel>
+            <!-- <TextBlock Text="{Binding Exception.StackTrace}"/> -->
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type local:TaskLog}">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="4">
+            <TextBlock Text="{Binding Description}"/>
+            <TextBlock Text="{Binding Status}"/>
+            <TextBlock Text="{Binding Exception}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type local:SuccessLog}">
+        <Grid Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Label Content="Description: " HorizontalAlignment="Left"/>
+            <Label Content="Time: " HorizontalAlignment="Left" Grid.Row="1"/>
+            <TextBlock Text="{Binding Description}" Grid.Column="1" HorizontalAlignment="Left" TextAlignment="Left" />
+            <TextBlock Text="{Binding Time, StringFormat=H:mm:ss}" Grid.Row="1" Grid.Column="1"/>
+        </Grid>
+    </DataTemplate>
+
     <Style TargetType="controls:LogEntryPresenter">
         <Setter Property="MinHeight" Value="30"/>
         <Setter Property="Visibility" Value="Visible"/>
@@ -71,68 +108,10 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LogEntryPresenter">
-
-                    <ContentPresenter Content="{TemplateBinding ActionLog}">
-                        <ContentPresenter.Resources>
-                            <DataTemplate DataType="{x:Type local:ExceptionLog}">
-                                <StackPanel Orientation="Vertical" Background="#FFAA0000" HorizontalAlignment="Stretch">
-                                    <StackPanel Orientation="Horizontal" Margin="3">
-                                        <Label Width="100" Content="Description:"/>
-                                        <Label Content="{Binding Description}"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="3">
-                                        <Label Width="100" Content="Exception:"/>
-                                        <TextBlock Text="{Binding Exception.Message}"/>
-                                    </StackPanel>
-                                    <!--
-                                        <TextBlock Text="{Binding Exception.StackTrace}"/>
-                                    -->
-                                </StackPanel>
-                            </DataTemplate>
-
-                            <DataTemplate DataType="{x:Type local:TaskLog}">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="4">
-                                    <TextBlock Text="{Binding Description}"/>
-                                    <TextBlock Text="{Binding Status}"/>
-                                    <TextBlock Text="{Binding Exception}"/>
-                                </StackPanel>
-                            </DataTemplate>
-
-                            <DataTemplate DataType="{x:Type local:SuccessLog}">
-                                <Grid
-                                    Background="{Binding Background,
-                                        RelativeSource={RelativeSource AncestorType={x:Type controls:LogEntryPresenter}}}">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition/>
-                                        <RowDefinition/>
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                    <Label Content="Description: " HorizontalAlignment="Left"/>
-                                    <Label Content="Time: " HorizontalAlignment="Left" Grid.Row="1"/>
-                                    <TextBlock Text="{Binding Description}" Grid.Column="1" HorizontalAlignment="Left" TextAlignment="Left" />
-                                    <TextBlock Text="{Binding Time, StringFormat=H:mm:ss}" Grid.Row="1" Grid.Column="1"/>
-                                </Grid>
-                                
-                            </DataTemplate>
-                            
-                        </ContentPresenter.Resources>
-                    </ContentPresenter>
-                    
+                    <ContentPresenter Content="{TemplateBinding ActionLog}"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-
-
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=ActionLog.LogLevel}" Value="None">
-                <Setter Property="Visibility" Value="Collapsed"/>
-            </DataTrigger> 
-        </Style.Triggers>
-
     </Style>
 
     <Style TargetType="controls:LogView">
@@ -205,6 +184,26 @@
             </Setter.Value>
         </Setter>
         
+    </Style>
+
+    <Style TargetType="{x:Type controls:LabelDecorator}">
+        <Setter Property="Margin" Value="6"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:LabelDecorator}">
+                    <DockPanel>
+                        <Label
+                            Margin="{adonisUi:Space Bottom=1}"
+                            Content="{TemplateBinding Text}"
+                            DockPanel.Dock="{TemplateBinding Dock}"
+                            VerticalAlignment="{TemplateBinding VerticalTextAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalTextAlignment}"/>
+
+                        <Border BorderThickness="0" x:Name="PART_childArea"/>
+                    </DockPanel> 
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

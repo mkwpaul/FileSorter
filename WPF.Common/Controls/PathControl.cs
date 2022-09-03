@@ -1,90 +1,90 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
+﻿//using CommunityToolkit.Mvvm.Input;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using WPF.Common.Commands;
 
-namespace WPF.Common.Controls
+namespace WPF.Common.Controls;
+
+public enum FileType
 {
-    public enum FileType
+    Directory,
+    File,
+}
+
+public partial class PathControl : Control
+{
+    static PathControl()
     {
-        Directory,
-        File,
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(PathControl), new FrameworkPropertyMetadata(typeof(PathControl)));
     }
 
-    public class PathControl : Control
+    public RelayCommand OpenFileExplorerCommand { get; }
+
+    public PathControl()
     {
-        static PathControl()
+        OpenFileExplorerCommand = new RelayCommand(OpenFileExplorer);
+    }
+    public static readonly DependencyProperty PathProperty = DependencyProperty.Register
+    (
+        nameof(Path),
+        typeof(string),
+        typeof(PathControl),
+        new FrameworkPropertyMetadata
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(PathControl), new FrameworkPropertyMetadata(typeof(PathControl)));
+            DefaultValue = "",
+            BindsTwoWayByDefault = true,
+            DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
         }
+    );
 
-        public PathControl()
+    public static readonly DependencyProperty FileTypeProperty = DependencyProperty.Register
+    (
+        nameof(FileType),
+        typeof(FileType),
+        typeof (PathControl),
+        new FrameworkPropertyMetadata
         {
-            OpenFileExplorerCommand = new RelayCommand(OpenFileExplorer);
+            DefaultValue =  FileType.Directory,
+            BindsTwoWayByDefault = false,
         }
+    );
 
-        public static readonly DependencyProperty PathProperty = DependencyProperty.Register
-        (
-            nameof(Path),
-            typeof(string),
-            typeof(PathControl),
-            new FrameworkPropertyMetadata
-            {
-                DefaultValue = "",
-                BindsTwoWayByDefault = true,
-                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-            }
-        );
+    public string Path
+    {
+        get => GetValue(PathProperty)?.ToString() ?? "";
+        set => SetValue(PathProperty, value);
+    }
 
-        public static readonly DependencyProperty FileTypeProperty = DependencyProperty.Register
-        (
-            nameof(FileType),
-            typeof(FileType),
-            typeof (PathControl),
-            new FrameworkPropertyMetadata
-            {
-                DefaultValue =  FileType.Directory,
-                BindsTwoWayByDefault = false,
-            }
-        );
+    public FileType FileType
+    {
+        get => (FileType)GetValue(FileTypeProperty);
+        set => SetValue(FileTypeProperty, value);
+    }
 
-        public string Path
+    //[RelayCommand]
+    private void OpenFileExplorer()
+    {
+        var dlg = new CommonOpenFileDialog
         {
-            get => GetValue(PathProperty)?.ToString() ?? "";
-            set => SetValue(PathProperty, value);
-        }
+            IsFolderPicker = FileType == FileType.Directory
+        };
 
-        public FileType FileType
+        if (!string.IsNullOrWhiteSpace(Path))
+            dlg.DefaultFileName = Path;
+
+        switch (dlg.ShowDialog())
         {
-            get => (FileType)GetValue(FileTypeProperty);
-            set => SetValue(FileTypeProperty, value);
-        }
-
-        public RelayCommand OpenFileExplorerCommand { get; }
-
-        public void OpenFileExplorer()
-        {
-            var dlg = new CommonOpenFileDialog
-            {
-                IsFolderPicker = FileType == FileType.Directory
-            };
-
-            if (!string.IsNullOrWhiteSpace(Path))
-                dlg.DefaultFileName = Path;
-
-            switch (dlg.ShowDialog())
-            {
-                case CommonFileDialogResult.None:
-                    Path = "";
-                    break;
-                case CommonFileDialogResult.Ok:
-                    Path = dlg.FileName;
-                    break;
-                case CommonFileDialogResult.Cancel:
-                    break;
-            }
+            case CommonFileDialogResult.None:
+                Path = "";
+                break;
+            case CommonFileDialogResult.Ok:
+                Path = dlg.FileName;
+                break;
+            case CommonFileDialogResult.Cancel:
+                break;
         }
     }
 }

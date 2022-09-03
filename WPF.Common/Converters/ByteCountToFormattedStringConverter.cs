@@ -3,8 +3,10 @@ using System.Windows.Data;
 
 namespace WPF.Common.Converters
 {
-    public class ByteCountToFormattedStringConverter : IValueConverter
+    public class ByteCountToFormattedStringConverter : IValueConverter, IHasStaticInstance<ByteCountToFormattedStringConverter>
     {
+        public static ByteCountToFormattedStringConverter Instance { get; } = new();
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value switch

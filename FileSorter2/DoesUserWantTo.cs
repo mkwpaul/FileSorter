@@ -1,97 +1,65 @@
 ﻿using AdonisUI.Controls;
 using System.Diagnostics;
+using WPF.Common;
 
-namespace FileSorter
+namespace FileSorter;
+
+public static class DoesUserWantTo
 {
-    public static class DoesUserWantTo
+    private const string question = "Question";
+
+    public static bool CreateFolder(this IUserInteraction interaction, string newFolderFull)
     {
-        public static bool CreateFolder(string newFolderFull)
-        {
-            var model = new MessageBoxModel()
-            {
-                Caption = "Question",
-                Text = $"Do you want to create a new Folder at: \n\n {newFolderFull}",
-                Buttons = MessageBoxButtons.YesNo(),
-            };
-
-            model.SetDefaultButton(MessageBoxResult.Yes);
-
-            var answer = MessageBox.Show(model) == MessageBoxResult.Yes;
-            return answer;
-        }
-
-        private static void SetDefault(this MessageBoxModel model, object id)
-        {
-            var defaultBtn = model.Buttons.FirstOrDefault(x => x.Id.Equals(id));
-            Debug.Assert(defaultBtn != null);
-            if (defaultBtn != null)
-                defaultBtn.IsDefault = true;
-        }
-
-        public static bool MoveFileToNewFolder()
-        {
-            var model = new MessageBoxModel()
-            {
-                Caption = "Question",
-                Text = "Do you want to move the current file there?",
-                Buttons = MessageBoxButtons.YesNo(),
-            };
-            model.SetDefaultButton(MessageBoxResult.Yes);
-
-            var answer = MessageBox.Show(model) == MessageBoxResult.Yes;
-            return answer;
-        }
-
-        public static bool DeleteFile()
-        {
-            var model = new MessageBoxModel
-            {
-                Text = "Are you sure you want to delete?",
-                Buttons = MessageBoxButtons.YesNo(),
-                Icon = MessageBoxImage.Exclamation,
-                Caption = "File Deletion",
-            };
-
-            model.SetDefaultButton(MessageBoxResult.Yes);
-            var answer = MessageBox.Show(model);
-            return answer == MessageBoxResult.Yes;
-        }
-
-        public static FileCollisionReaction ReactToFileCollision(string newFullPath)
-        {
-            var model = new MessageBoxModel()
-            {
-                Caption = "Question",
-                Text = $"A file already exists at {newFullPath}. What do you want to do?",
-                Buttons = new IMessageBoxButtonModel[]
-                {
-                     MessageBoxButtons.Custom("Overwrite File", FileCollisionReaction.Overwrite),
-                     MessageBoxButtons.Custom("Delete current File", FileCollisionReaction.Delete),
-                     MessageBoxButtons.Custom("Cancel", FileCollisionReaction.Cancel),
-                },
-                Icon = MessageBoxImage.Question
-            };
-
-            model.SetDefault(FileCollisionReaction.Overwrite);
-            return (FileCollisionReaction)MessageBox.Show(model);
-        }
+        return MessageBuilder.CreateYesNo()
+            .SetCaption(question)
+            .SetText($"Do you want to create a new Folder at: \n\n {newFolderFull}")
+            .Show(interaction);
     }
 
-    public enum FileCollisionReaction
+    public static bool MoveFileToNewFolder(this IUserInteraction interaction)
     {
-        /// <summary>
-        /// Cancel the Process of Moving the file, deleting no files.
-        /// </summary>
-        Cancel,
-
-        /// <summary>
-        /// Overwrite the already existing file with the file that's about to move
-        /// </summary>
-        Overwrite,
-
-        /// <summary>
-        /// Keep the existing file at the target destination and delete the file that was supposed to move
-        /// </summary>
-        Delete,
+        return MessageBuilder.CreateYesNo()
+            .SetCaption(question)
+            .SetText("Do you want to move the current file there?")
+            .Show(interaction);
     }
+
+    public static bool DeleteFile(this IUserInteraction interaction)
+    {
+        return MessageBuilder.CreateYesNo()
+            .SetText("Are you sure you want to delete?")
+            .SetCaption("File Deletion")
+            .SetIcon(MessageBoxImage.Exclamation)
+            .Show(interaction);
+    }
+
+    public static FileCollisionReaction ReactToFileCollision(this IUserInteraction interaction, string newFullPath)
+    {
+        return MessageBuilder.CreateCustom<FileCollisionReaction>()
+            .SetCaption(question)
+            .SetText($"A file already exists at {newFullPath}. What do you want to do?")
+            .AddAnswer(FileCollisionReaction.Overwrite, "Overwrite file")
+            .AddAnswer(FileCollisionReaction.Delete, "Delete current file")
+            .AddAnswer(FileCollisionReaction.Cancel, "Cancel")
+            .SetDefault(FileCollisionReaction.Overwrite)
+            .Show(interaction);
+    }
+}
+
+public enum FileCollisionReaction
+{
+    /// <summary>
+    /// Cancel the Process of Moving the file, deleting no files.
+    /// </summary>
+    Cancel,
+
+    /// <summary>
+    /// Overwrite the already existing file with the file that's about to move
+    /// </summary>
+    Overwrite,
+
+    /// <summary>
+    /// Keep the existing file at the target destination and delete the file that was supposed to move
+    /// </summary>
+    Delete,
 }

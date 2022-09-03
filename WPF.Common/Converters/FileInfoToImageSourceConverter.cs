@@ -6,9 +6,9 @@ using System.Windows.Media.Imaging;
 
 namespace WPF.Common.Converters
 {
-    public class FileInfoToImageSourceConverter : IValueConverter
+    public class FileInfoToImageSourceConverter : IValueConverter, IHasStaticInstance<FileInfoToImageSourceConverter>
     {
-        private readonly Dictionary<string, BitmapSource> _cache = new();
+        public static FileInfoToImageSourceConverter Instance { get; } = new();
 
         public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -22,9 +22,6 @@ namespace WPF.Common.Converters
 
         public Task<BitmapSource> ConvertAsync(string filePath, CancellationToken token = default)
         {
-            if (_cache.TryGetValue(filePath, out var result) && File.Exists(filePath))
-                return Task.FromResult(result);
-
             return Task.Run(() =>
             {
                 switch (Path.GetExtension(filePath).ToLower())
@@ -34,14 +31,13 @@ namespace WPF.Common.Converters
                     case ".jpeg":
                     case ".bmp":
                     case ".gif":
-                        return ReadImageToCache(filePath);
+                        return ReadImage(filePath);
                 }
 
                 using var shellFile = ShellFile.FromFilePath(filePath);
                 var source = shellFile?.Thumbnail?.ExtraLargeBitmapSource;
                 if (source is not null)
                 {
-                    _cache[filePath] = source;
                     return source;
                 }
 
@@ -50,9 +46,6 @@ namespace WPF.Common.Converters
         }
         private object GetImageSourceFromFileInfo(string filePath, string extension)
         {
-            if (_cache.TryGetValue(filePath, out var result) && File.Exists(filePath))
-                return result;
-
             switch (extension.ToLower())
             {
                 case ".png":
@@ -60,15 +53,13 @@ namespace WPF.Common.Converters
                 case ".jpeg":
                 case ".bmp":
                 case ".gif":
-                    return ReadImageToCache(filePath);
+                    return ReadImage(filePath);
             }
 
             try
             {
                 using var shellFile = ShellFile.FromFilePath(filePath);
                 var source = shellFile?.Thumbnail?.ExtraLargeBitmapSource;
-                if (source is not null)
-                    _cache[filePath] = source;
                 return source;
             }
             catch (FileNotFoundException ex)
@@ -77,18 +68,9 @@ namespace WPF.Common.Converters
             }
         }
 
-        private BitmapImage ReadImageToCache(string filePath)
-        {
-            // Image Controls can load images directly by giving them the file path directly as source
-            // However when doing that they block the files from being nmoved or deleted
-            // Hence why we manually load them
-            var result = ReadImage(filePath);
-            _cache[filePath] = result;
-            return result;
-        }
-
         private static BitmapImage ReadImage(string filePath)
         {
+            // loading of file could crash if file is corrupted
             var bmi = new BitmapImage();
             bmi.BeginInit();
             bmi.UriSource = new Uri(filePath);

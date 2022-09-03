@@ -14,7 +14,7 @@ namespace WPF.Common.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (ToBoolean.ToBool(value))
+            if (value.ToBool())
                 return Visibility.Visible;
             else
                 return FalseVisibility;
@@ -27,13 +27,17 @@ namespace WPF.Common.Converters
         public abstract Visibility FalseVisibility { get; }
     }
 
-    public class ToVisibilityCollapsed : VisibilityConverter
+    public class ToVisibilityCollapsed : VisibilityConverter, IHasStaticInstance<ToVisibilityCollapsed>
     {
+        public static ToVisibilityCollapsed Instance { get; } = new();
+        
         public override Visibility FalseVisibility => Visibility.Collapsed;
     }
 
-    public class ToVisibilityHidden : VisibilityConverter
+    public class ToVisibilityHidden : VisibilityConverter, IHasStaticInstance<ToVisibilityHidden>
     {
+        public static ToVisibilityHidden Instance { get; } = new();
+
         public override Visibility FalseVisibility => Visibility.Hidden;
     }
 }

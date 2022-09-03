@@ -8,39 +8,38 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WPF.Common
+namespace WPF.Common;
+
+public abstract class PropertyChangedNotifier : INotifyPropertyChanged
 {
-    public abstract class PropertyChangedNotifier : INotifyPropertyChanged
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void NotifyPropertyChanged(string propertyName)
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
-        protected void NotifyPropertyChanged(string propertyName)
+    protected void SetProperty<T>(ref T t, T value, [CallerMemberName]string propertyName = null!)
+    {
+        if (t is null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        protected void SetProperty<T>(ref T t, T value, [CallerMemberName]string propertyName = null!)
-        {
-            if (t is null)
-            {
-                if (value is null)
-                    return;
-            }
-            else if (t.Equals(value))
-            {
+            if (value is null)
                 return;
-            }
-
-            t = value;
-            NotifyPropertyChanged(propertyName);
         }
-
-        public void FowardNotification(object? sender, PropertyChangedEventArgs e)
+        else if (t.Equals(value))
         {
-            if (e.PropertyName is null)
-                return;
-
-            NotifyPropertyChanged(e.PropertyName);
+            return;
         }
+
+        t = value;
+        NotifyPropertyChanged(propertyName);
+    }
+
+    public void FowardNotification(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is null)
+            return;
+
+        NotifyPropertyChanged(e.PropertyName);
     }
 }

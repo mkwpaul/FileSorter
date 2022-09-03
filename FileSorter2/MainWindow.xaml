@@ -21,10 +21,6 @@
         <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}"/>
     </Window.Style>
 
-    <Window.DataContext>
-        <local:MainViewModel/>
-    </Window.DataContext>
-
     <Window.InputBindings>
         <KeyBinding Key="Left" 
                     Command="{Binding Commands.GoToPreviousCommand}"/>
@@ -52,13 +48,15 @@
 
         <DockPanel LastChildFill="True" Background="Transparent" x:Name="Main" >
 
-            <GroupBox x:Name="TargetFoldersPanel"
+            
+            <GroupBox 
+                x:Name="TargetFoldersPanel"
                 DockPanel.Dock="Left">
                 <ListBox x:Name="folders" ItemsSource="{Binding FilteredTargets}" SelectedItem="{Binding CurrentTargetFolder}"
                              Margin="3">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Width="300" MinWidth="300"/>
+                            <UniformGrid Width="300" MinWidth="300"/>
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
 
@@ -92,8 +90,6 @@
                     </TextBlock>
                 </GroupBox>
             </StackPanel>
-
-
 
             <GroupBox x:Name="MoveToPanel"
                 DockPanel.Dock="Top" 

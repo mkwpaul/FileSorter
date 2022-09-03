@@ -8,37 +8,38 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using WPF.Common;
 
-namespace FileSorter
+namespace FileSorter;
+
+public partial class App : Application
 {
-    public partial class App : Application
+    IHost host;
+    IServiceProvider services;
+    public App()
     {
-        public IServiceProvider ServiceProvider { get; private set; }
+        InitializeComponent();
+        ResourceLocator.SetColorScheme(Application.Current.Resources, ResourceLocator.DarkColorScheme);
+    }
 
-        public App()
-        {
-            InitializeComponent();
-            ResourceLocator.SetColorScheme(Application.Current.Resources, ResourceLocator.DarkColorScheme);
-        }
+    private void OnStartup(object sender, StartupEventArgs e)
+    {
+        host = 
+            Host.CreateDefaultBuilder(e.Args)
+            .ConfigureServices((host, services) =>
+                {
+                    services.AddSingleton<IUserInteraction, UserInteraction>();
 
-        private void OnStartup(object sender, StartupEventArgs e)
-        {
-            var host = CreateHostBuilder(e.Args).Build();
-            this.MainWindow = new MainWindow();
-            this.MainWindow.Show();
-        }
+                    var settings = SettingsReader.GetSettingsFromFile() ?? new Settings();
+                    services.AddSingleton(settings);
+                    services.AddSingleton<MainViewModel>();
+                    services.AddSingleton<MainWindow>();
+                })
+            .Build();
 
+        services = host.Services;
 
-        static IHostBuilder CreateHostBuilder(string[] args)
-        {
-            var builder = Host.CreateDefaultBuilder(args);
-
-            builder.ConfigureServices(ConfigureServices);
-            return builder;
-        }
-
-        private static void ConfigureServices(HostBuilderContext host, IServiceCollection services)
-        {
-        }
+        MainWindow = services.GetService<MainWindow>()!;
+        MainWindow.Show();
     }
 }

@@ -7,9 +7,10 @@ namespace FileSorter
     /// </summary>
     public partial class MainWindow : AdonisWindow
     {
-        public MainWindow()
+        public MainWindow(MainViewModel mainViewModel)
         {
             InitializeComponent();
+            DataContext = mainViewModel;
         }
     }
 }

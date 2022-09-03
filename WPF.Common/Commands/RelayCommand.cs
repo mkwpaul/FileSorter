@@ -1,33 +1,32 @@
-﻿namespace WPF.Common.Commands
+﻿namespace WPF.Common.Commands;
+
+public class RelayCommand<T> : Command
 {
-    public class RelayCommand<T> : Command
+    private readonly Action<T> action;
+    private readonly Func<T, bool>? predicate;
+     
+    public RelayCommand(Action<T> action, Func<T, bool>? predicate = null)
     {
-        private readonly Action<T> action;
-        private readonly Func<T, bool>? predicate;
-         
-        public RelayCommand(Action<T> action, Func<T, bool>? predicate = null)
-        {
-            this.action = action ?? throw new ArgumentException(null, nameof(action));
-            this.predicate = predicate;
-        }
-
-        public override bool CanExecute(object? parameter)
-        {
-            if (predicate == null)
-                return true;
-            return predicate((T)parameter!);
-        }
-
-        public override void Execute(object? parameter)
-        {
-            action((T)parameter!);
-        }
+        this.action = action ?? throw new ArgumentException(null, nameof(action));
+        this.predicate = predicate;
     }
 
-    public class RelayCommand : RelayCommand<object>
+    public override bool CanExecute(object? parameter)
     {
-        public RelayCommand(Action action, Func<bool> func = null!) : base(_ => action(), _ => func == null || func())
-        {
-        }
+        if (predicate == null)
+            return true;
+        return predicate((T)parameter!);
+    }
+
+    public override void Execute(object? parameter)
+    {
+        action((T)parameter!);
+    }
+}
+
+public class RelayCommand : RelayCommand<object>
+{
+    public RelayCommand(Action action, Func<bool> func = null!) : base(_ => action(), _ => func == null || func())
+    {
     }
 }
