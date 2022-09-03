@@ -14,12 +14,13 @@ namespace WPF.Common.Controls;
 [ContentProperty("Child")]
 public class LabelDecorator : Control
 {
+    Border? PART_childArea;
+
     static LabelDecorator()
     {
         DefaultStyleKeyProperty.OverrideMetadata(typeof(LabelDecorator), new FrameworkPropertyMetadata(typeof(LabelDecorator)));
     }
 
-    Border? PART_childArea;
     public override void OnApplyTemplate()
     {
         base.OnApplyTemplate();

@@ -5,6 +5,7 @@ namespace WPF.Common;
 public interface IActionLog
 {
     string Description { get; }
+    string? Category { get; }
     TaskStatus Status { get; }
     LogLevel LogLevel { get; }
     Exception? Exception { get; }
@@ -21,6 +22,8 @@ public record ExceptionLog(Exception Exception) : IActionLog
     public LogLevel LogLevel => LogLevel.Error;
 
     public TimeOnly Time { get; } = DateTime.Now.GetTime();
+
+    public string? Category { get; init; }
 }
 
 public record SuccessLog(string Description) : IActionLog
@@ -31,11 +34,14 @@ public record SuccessLog(string Description) : IActionLog
 
     public Exception? Exception => null;
 
-    public TimeOnly Time { get; } = DateTime.Now.GetTime();
+    public TimeOnly Time { get; init; } = DateTime.Now.GetTime();
+
+    public string? Category { get; init; }
 }
 
-public class TaskLog : PropertyChangedNotifier, IActionLog
-{
+public class TaskLog : PropertyChangedNotifier, IActionLog{
+    public string? Category { get; init; }
+
     public Task Task { get; }
 
     public string Description { get; init; } = "";
@@ -74,5 +80,5 @@ public class TaskLog : PropertyChangedNotifier, IActionLog
 
     public Exception? Exception => TaskWrapper.Task.Exception;
 
-    public TimeOnly Time { get; } = DateTime.Now.GetTime();
+    public TimeOnly Time { get; init; } = DateTime.Now.GetTime();
 }

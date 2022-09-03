@@ -56,7 +56,7 @@ public class LogView : Control
         }
     );
 
-    private void OnLogsSourceChanged(DependencyPropertyChangedEventArgs e)
+    void OnLogsSourceChanged(DependencyPropertyChangedEventArgs e)
     {
         if (e.NewValue != null)
         {
@@ -83,7 +83,7 @@ public class LogView : Control
         }
     }
 
-    private void CollectionNotifier_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    void CollectionNotifier_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         SortedLogs.View?.Refresh();
     }

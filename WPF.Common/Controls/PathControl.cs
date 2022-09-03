@@ -1,6 +1,4 @@
-﻿//using CommunityToolkit.Mvvm.Input;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using System.IO;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -14,7 +12,7 @@ public enum FileType
     File,
 }
 
-public partial class PathControl : Control
+public class PathControl : Control
 {
     static PathControl()
     {
@@ -27,6 +25,7 @@ public partial class PathControl : Control
     {
         OpenFileExplorerCommand = new RelayCommand(OpenFileExplorer);
     }
+
     public static readonly DependencyProperty PathProperty = DependencyProperty.Register
     (
         nameof(Path),
@@ -64,7 +63,6 @@ public partial class PathControl : Control
         set => SetValue(FileTypeProperty, value);
     }
 
-    //[RelayCommand]
     private void OpenFileExplorer()
     {
         var dlg = new CommonOpenFileDialog

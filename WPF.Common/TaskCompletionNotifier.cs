@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WPF.Common;
+﻿namespace WPF.Common;
 
 public class TaskCompletionNotifier : PropertyChangedNotifier
 {
@@ -21,7 +14,7 @@ public class TaskCompletionNotifier : PropertyChangedNotifier
         Task.ContinueWith(UpdateStatus, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, scheduler);
     }
 
-    private void UpdateStatus(Task t)
+    void UpdateStatus(Task t)
     {
         NotifyPropertyChanged(nameof(IsCompleted));
         NotifyPropertyChanged(nameof(TaskStatus));

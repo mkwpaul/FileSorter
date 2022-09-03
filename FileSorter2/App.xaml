@@ -14,7 +14,6 @@
                 <ResourceDictionary Source="pack://application:,,,/AdonisUI.ClassicTheme;component/Resources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <converters:FileInfoToImageSourceConverter x:Key="fileInfoToImage"/>
             <converters:ByteCountToFormattedStringConverter x:Key="byteCountFormatter"/>
             <converters:ToVisibilityCollapsed x:Key="ToVisibilityCollapsed"/>
             <converters:ToVisibilityHidden x:Key="ToVisibilityHidden"/>

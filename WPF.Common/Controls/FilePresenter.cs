@@ -13,7 +13,7 @@ namespace WPF.Common.Controls;
 
 public class FilePresenter : Control
 {
-    private readonly FileInfoToImageSourceConverter thumbConverter = new();
+    readonly FileInfoToImageSourceConverter thumbConverter = new(null);
 
     public static readonly DependencyProperty FileProperty = DependencyProperty.Register
     (
@@ -39,7 +39,7 @@ public class FilePresenter : Control
         }
     );
 
-    private void OnFileInfoChanged(DependencyPropertyChangedEventArgs e)
+    void OnFileInfoChanged(DependencyPropertyChangedEventArgs e)
     {
         if (e.NewValue is FileInfo info)
         {
@@ -48,8 +48,8 @@ public class FilePresenter : Control
         }
     }
 
-    private readonly BitmapSource timeout = new BitmapImage();
-    private async Task<BitmapSource> getTimeOut()
+    readonly BitmapSource timeout = new BitmapImage();
+    async Task<BitmapSource> getTimeOut()
     {
         await Task.Delay(TimeSpan.FromSeconds(30));
         return timeout;
@@ -63,7 +63,7 @@ public class FilePresenter : Control
         new FrameworkPropertyMetadata(null)
     );
 
-    private static readonly DependencyProperty ThumbnailSourceProperty = ThumbnailSourcePropertyKey.DependencyProperty;
+    static readonly DependencyProperty ThumbnailSourceProperty = ThumbnailSourcePropertyKey.DependencyProperty;
 
     public TaskCompletionNotifier<BitmapSource> ThumbnailSource
     {
@@ -77,7 +77,7 @@ public class FilePresenter : Control
         set => SetValue(FileProperty, value);
     }
 
-    private void OnFileChanged(DependencyPropertyChangedEventArgs e)
+    void OnFileChanged(DependencyPropertyChangedEventArgs e)
     {
         switch (e.NewValue)
         {

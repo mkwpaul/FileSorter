@@ -26,19 +26,19 @@
                         </Style>
                     </ControlTemplate.Resources>
 
-                    <GroupBox BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}">
+                    <GroupBox BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" IsTabStop="False">
                         
                         <StackPanel Orientation="Horizontal">
                             <Label Content="{TemplateBinding Name}"
-                                   
-                                   
                                    VerticalAlignment="Center"
                                    Padding="{adonisUi:Space HorizontalOffset=1}"
                                    BorderThickness="0"
+                                   IsTabStop="False"
                                    />
                             <TextBox BorderThickness="0"
                                      VerticalAlignment="Stretch"
                                      VerticalContentAlignment="Center"
+                                     AcceptsTab="False"
                                      AcceptsReturn="False"
                                      local:Attach.SelectAllOnEntry="True"
                                 Text="{Binding Path=Path,
@@ -62,7 +62,7 @@
     </Style>
 
     <DataTemplate DataType="{x:Type local:ExceptionLog}">
-        <StackPanel Orientation="Vertical" Background="#FFAA0000" HorizontalAlignment="Stretch">
+        <StackPanel Orientation="Vertical" Background="#740000" HorizontalAlignment="Stretch">
             <StackPanel Orientation="Horizontal" Margin="3">
                 <Label Width="100" Content="Description:"/>
                 <Label Content="{Binding Description}"/>

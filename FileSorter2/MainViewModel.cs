@@ -4,27 +4,64 @@ using System.ComponentModel;
 using WPF.Common;
 using System.Windows.Data;
 using System.Collections.Specialized;
+using Serilog;
+using WPF.Common.Commands;
 
 namespace FileSorter;
 
 public class MainViewModel : PropertyChangedNotifier
 {
-    private string _searchText = "";
+    string _searchText = "";
+    FileInfo? _currentFile;
+    ObservableCollection<DirectoryInfo>? _targetFolders;
+    ObservableCollection<FileInfo>? _files;
+    ICollectionView? _filteredTargets;
+    int _currentFileIndex;
+    DirectoryInfo? _currentTargetFolder;
+    Settings? settings;
 
-    private FileInfo? _currentFile;
-    private ObservableCollection<DirectoryInfo>? _targetFolders;
-    private ObservableCollection<FileInfo>? _files;
-    private ICollectionView? _filteredTargets;
-    private readonly CollectionViewSource collectionView;
-    private int _currentFileIndex;
-    private DirectoryInfo? _currentTargetFolder;
-    private Settings settings;
+    readonly CollectionViewSource collectionView;
+    readonly MainModule _main;
+    readonly ILogger log;
 
-    public ObservableCollection<IActionLog> Logs { get; } = new();
+    public MainViewModel(MainModule main, Settings settings, Log sink, ILogger logger)
+    {
+        _main = main;
+        Logs = sink;
+        log = logger.ForContext<MainViewModel>();
+        Settings = settings;
 
-    public Commands Commands { get; }
+        PropertyChanged += OnPropertyChanged;
+        collectionView = new()
+        {
+            IsLiveFilteringRequested = true,
+            IsLiveSortingRequested = true
+        };
 
-    public Settings Settings
+        main.ReadSourceFolder(this);
+        main.ReadTargetFoldersFolder(this);
+
+        GoToNextCommand = new RelayCommand(() => main.GoToNextFile(this));
+        GoToPreviousCommand = new RelayCommand(() => main.GoToPreviousFile(this));
+        DeleteFileCommand = new RelayCommand<FileInfo>(x => main.DeleteFile(this, x));
+        OpenInExplorerCommand = new RelayCommand<FileInfo>(x => main.OpenInExplorer(x));
+        MoveToTargetFolderCommand = new RelayCommand(() => main.MoveToTargetFolder(this));
+        SelectFirstFolderCommand = new RelayCommand(() => main.SelectFirstFolder(this));
+        OnEnterCommand = new RelayCommand(() => main.OnEnter(this));
+        CreateNewFolderFromSearchCommand = new RelayCommand(() => main.CreateNewFolderFromSearch(this));
+    }
+
+    public Log Logs { get; }
+    public Command GoToNextCommand { get; }
+    public Command GoToPreviousCommand { get; }
+    public Command DeleteFileCommand { get; }
+    public Command OpenInExplorerCommand { get; }
+    public Command MoveToTargetFolderCommand { get; }
+    public Command SelectFirstFolderCommand { get; }
+    public Command CreateNewFolderFromSearchCommand { get; }
+    public Command OnEnterCommand { get; }
+
+    public Settings? Settings
     {
         get => settings;
         set
@@ -32,61 +69,16 @@ public class MainViewModel : PropertyChangedNotifier
             if (settings != null)
             {
                 settings.PropertyChanged -= FowardNotification;
-                settings.PropertyChanged -= this.SaveToDiskOnChanged;
+                settings.PropertyChanged -= SaveToDiskOnChanged;
             }
             SetProperty(ref settings!, value);
             if (settings != null)
             {
-                settings.PropertyChanged += this.SaveToDiskOnChanged;
+                settings.PropertyChanged += SaveToDiskOnChanged;
                 settings.PropertyChanged += FowardNotification;
             }
         }
     }
-
-    public MainViewModel(IUserInteraction userInteraction, Settings settings)
-    {
-        Commands = new(this, userInteraction);
-        Settings = settings;
-
-
-        PropertyChanged += OnPropertyChanged;
-        collectionView = new();
-        collectionView.IsLiveFilteringRequested = true;
-        collectionView.IsLiveSortingRequested = true;
-        this.ReadSourceFolder();
-        this.ReadTargetFoldersFolder();
-    }
-
-    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        switch (e.PropertyName)
-        {
-             case nameof(CurrentFile):
-                var temp = CurrentTargetFolder;
-                SearchText = "";
-                CurrentTargetFolder = temp;
-                break;
-            case nameof(Settings.TargetFoldersFolder):
-                this.ReadTargetFoldersFolder();
-                break;
-            case nameof(Settings.SourceFolder):
-                this.ReadSourceFolder();
-                break;
-            case nameof(TargetFolders):
-                collectionView.Source = TargetFolders;
-                collectionView.View.Filter = this.Filter;
-                FilteredTargets = collectionView.View;
-                break;
-            case nameof(SearchText):
-                collectionView.View?.Refresh();
-                Commands.SelectFirstFolder();
-                break;
-            case nameof(CurrentFileIndex):
-                CurrentFile = Files?.Count > 0 ? Files![CurrentFileIndex] : null;
-                break;
-        }
-    }
-
 
     public int CurrentFileIndex
     {
@@ -134,15 +126,62 @@ public class MainViewModel : PropertyChangedNotifier
         set => SetProperty(ref _filteredTargets, value);
     }
 
-    public ObservableCollection<FileInfo>? Files
-    {
-        get => _files;
-        set => SetProperty(ref _files, value);
-    }
+    public ObservableCollection<FileInfo> Files { get; } = new();
 
     public string SearchText
     {
         get => _searchText;
         set => SetProperty(ref _searchText, value);
+    }
+
+    void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(CurrentFile):
+                // Reset SearchText while keeping selected Target
+                var temp = CurrentTargetFolder;
+                SearchText = "";
+                CurrentTargetFolder = temp;
+                break;
+            case nameof(Settings.TargetFoldersFolder):
+                _main.ReadTargetFoldersFolder(this);
+                break;
+            case nameof(Settings.SourceFolder):
+                _main.ReadSourceFolder(this);
+                break;
+            case nameof(TargetFolders):
+                collectionView.Source = TargetFolders;
+                collectionView.View.Filter = Filter;
+                FilteredTargets = collectionView.View;
+                break;
+            case nameof(SearchText):
+                collectionView.View?.Refresh();
+                _main.SelectFirstFolder(this);
+                break;
+            case nameof(CurrentFileIndex):
+                CurrentFile = Files?.Count > 0 ? Files![CurrentFileIndex] : null;
+                break;
+        }
+    }
+
+    void SaveToDiskOnChanged(object? sender, PropertyChangedEventArgs _)
+    {
+        if (sender is not Settings settings)
+            return;
+
+        var task = SettingsReader.SafeToDisk(settings);
+        log.Information("Saving Settings to Disk, {task}", task);
+    }
+
+    bool Filter(object o)
+    {
+        if (o is not DirectoryInfo dicInfo)
+            return false;
+
+        if (string.IsNullOrWhiteSpace(SearchText))
+            return true;
+
+        return dicInfo.Name.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase);
     }
 }

@@ -36,15 +36,23 @@ public class UserInteraction : IUserInteraction
         return MessageBox.Show(model);
     }
 
-    public T Show<T>(IMessageBoxModel model) where T : unmanaged, Enum
+    public T Show<T>(IMessageBoxModel<T> model) where T : unmanaged, Enum
     {
-        int val = (int)MessageBox.Show(model);
+        var result = MessageBox.Show(model);
+        if (result != MessageBoxResult.Custom)
+            throw new InvalidOperationException();
+
+        var result2 = model.ButtonPressed?.Id ?? model.Buttons.FirstOrDefault(x => x.IsDefault);
+
+        int val = (int)result2;
         return val.ToEnum<T>();
     }
 
     public bool Show(IMessageBoxModel<BooleanResult> model)
     {
-        return Show<BooleanResult>(model) == BooleanResult.Yes;
+        var result = Show<BooleanResult>(model);
+
+        return result == BooleanResult.Yes;
     }
 }
 
@@ -97,7 +105,7 @@ public static class EnumExtensions
     }
 
     [Conditional("DEBUG")]
-    private static void VerifyUnderlyingType<TOther, TEnum>() where TOther : unmanaged where TEnum : unmanaged, Enum
+    static void VerifyUnderlyingType<TOther, TEnum>() where TOther : unmanaged where TEnum : unmanaged, Enum
     {
         if (typeof(TEnum).GetEnumUnderlyingType() != typeof(TOther))
             throw new InvalidCastException();

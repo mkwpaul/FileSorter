@@ -23,7 +23,7 @@ public interface IUserInteraction
 
     MessageBoxResult Show(IMessageBoxModel model);
 
-    T Show<T>(IMessageBoxModel model) where T : unmanaged, Enum;
+    T Show<T>(IMessageBoxModel<T> model) where T : unmanaged, Enum;
 
     bool Show(IMessageBoxModel<BooleanResult> model);
 }

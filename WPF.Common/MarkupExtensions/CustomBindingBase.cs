@@ -202,7 +202,7 @@ public abstract class CustomBindingBase : MarkupExtension
     /// instance.
     /// </summary>
     /// <returns>
-    /// The object value to set on the property where the extension is applied. 
+    /// The object value to set on the property where the extension is applied.
     /// In case of a valid binding expression, this is a <see cref="BindingExpressionBase"/>
     /// instance.
     /// </returns>
@@ -227,15 +227,17 @@ public abstract class CustomBindingBase : MarkupExtension
     /// <param name="target">The binding target of the binding.</param>
     /// <param name="dp">The target property of the binding.</param>
     /// <returns>True if the provider supports all that's needed.</returns>
-    protected virtual bool TryGetTargetItems(IServiceProvider provider, out DependencyObject? target, out DependencyProperty dp)
+    protected virtual bool TryGetTargetItems(IServiceProvider provider, out DependencyObject? target, out DependencyProperty? dp)
     {
         target = null;
         dp = null;
-        if (provider == null) return false;
+        if (provider is null)
+            return false;
 
         //create a binding and assign it to the target
-        IProvideValueTarget service = (IProvideValueTarget)provider.GetService(typeof(IProvideValueTarget));
-        if (service == null) return false;
+        var service = (IProvideValueTarget?)provider.GetService(typeof(IProvideValueTarget));
+        if (service is null)
+            return false;
 
         //we need dependency objects / properties
         target = service.TargetObject as DependencyObject;

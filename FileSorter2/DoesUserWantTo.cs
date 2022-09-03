@@ -11,9 +11,9 @@ public static class DoesUserWantTo
     public static bool CreateFolder(this IUserInteraction interaction, string newFolderFull)
     {
         return MessageBuilder.CreateYesNo()
-            .SetCaption(question)
-            .SetText($"Do you want to create a new Folder at: \n\n {newFolderFull}")
-            .Show(interaction);
+                .SetCaption(question)
+                .SetText($"Do you want to create a new Folder at: \n\n {newFolderFull}")
+                .Show(interaction);
     }
 
     public static bool MoveFileToNewFolder(this IUserInteraction interaction)

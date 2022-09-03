@@ -2,8 +2,8 @@
 
 public class RelayCommand<T> : Command
 {
-    private readonly Action<T> action;
-    private readonly Func<T, bool>? predicate;
+    readonly Action<T> action;
+    readonly Func<T, bool>? predicate;
      
     public RelayCommand(Action<T> action, Func<T, bool>? predicate = null)
     {

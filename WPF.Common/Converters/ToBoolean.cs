@@ -2,20 +2,17 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace WPF.Common.Converters
+namespace WPF.Common.Converters;
+
+public class ToBoolean : IValueConverter
 {
-    public class ToBoolean : IValueConverter, IHasStaticInstance<ToBoolean>
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        public static ToBoolean Instance { get; } = new();
+        return value.ToBool();
+    }
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return value.ToBool();
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            return Binding.DoNothing;
-        }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Binding.DoNothing;
     }
 }
