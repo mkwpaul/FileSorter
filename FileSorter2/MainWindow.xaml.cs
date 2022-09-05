@@ -1,16 +1,11 @@
 ﻿using AdonisUI.Controls;
+namespace FileSorter;
 
-namespace FileSorter
+public partial class MainWindow : AdonisWindow
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : AdonisWindow
+    public MainWindow(MainViewModel mainViewModel)
     {
-        public MainWindow(MainViewModel mainViewModel)
-        {
-            InitializeComponent();
-            DataContext = mainViewModel;
-        }
+        InitializeComponent();
+        DataContext = mainViewModel;
     }
 }

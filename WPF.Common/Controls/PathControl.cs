@@ -63,7 +63,7 @@ public class PathControl : Control
         set => SetValue(FileTypeProperty, value);
     }
 
-    private void OpenFileExplorer()
+    void OpenFileExplorer()
     {
         var dlg = new CommonOpenFileDialog
         {

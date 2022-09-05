@@ -12,7 +12,7 @@ namespace WPF.Common.MarkupExtensions
 {
     public class VisibilityBinding : CustomBindingBase
     {
-        private readonly converter bindingConverter;
+        readonly converter bindingConverter;
         public Visibility HiddenVisibilty { get; set; } = Visibility.Collapsed;
         public override IValueConverter? Converter
         {
@@ -24,12 +24,12 @@ namespace WPF.Common.MarkupExtensions
 
         public VisibilityBinding()
         {
-            Binding.Converter = bindingConverter = new converter() { Parent =  this };
+            Binding.Converter = bindingConverter = new converter(this);
         }
 
         public VisibilityBinding(string path) : base(path)
         {
-            Binding.Converter = bindingConverter = new converter() { Parent = this };
+            Binding.Converter = bindingConverter = new converter(this);
         }
 
         private class converter : IValueConverter
@@ -37,6 +37,11 @@ namespace WPF.Common.MarkupExtensions
             public IValueConverter? UserConverter { get; set; }
 
             public VisibilityBinding Parent { get; init; }
+
+            public converter(VisibilityBinding parent)
+            {
+                Parent = parent;
+            }
 
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
@@ -52,7 +57,7 @@ namespace WPF.Common.MarkupExtensions
                 };
             }
 
-            private Visibility FromVisibilty(Visibility vis)
+            Visibility FromVisibilty(Visibility vis)
             {
                 if (!Parent.Invert)
                     return vis;
@@ -61,7 +66,7 @@ namespace WPF.Common.MarkupExtensions
                 return Visibility.Visible;
             }
 
-            private Visibility FromBool(bool val)
+            Visibility FromBool(bool val)
             {
                 return val ^ Parent.Invert ? Visibility.Visible : Parent.HiddenVisibilty;
             }

@@ -9,7 +9,6 @@ namespace FileSorter;
 
 public class Log : ObservableCollection<IActionLog>, ILogEventSink
 {
-
     public void Emit(LogEvent log)
     {
         var entry = ToActionLog(log);

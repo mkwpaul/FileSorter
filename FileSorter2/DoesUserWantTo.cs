@@ -6,7 +6,7 @@ namespace FileSorter;
 
 public static class DoesUserWantTo
 {
-    private const string question = "Question";
+    const string question = "Question";
 
     public static bool CreateFolder(this IUserInteraction interaction, string newFolderFull)
     {

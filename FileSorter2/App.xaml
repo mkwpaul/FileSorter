@@ -4,13 +4,12 @@
              xmlns:converters="clr-namespace:WPF.Common.Converters;assembly=WPF.Common"
              xmlns:local="clr-namespace:FileSorter"
              xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
-             Startup="OnStartup"
              >
     
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/AdonisUI;component/ColorSchemes/Dark.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/AdonisUI;component/ColorSchemes/.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/AdonisUI.ClassicTheme;component/Resources.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 

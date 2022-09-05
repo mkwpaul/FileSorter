@@ -6,9 +6,9 @@ namespace FileSorter;
 
 public class Settings : PropertyChangedNotifier
 {
-    private string _sourceFolder = "";
-    private string _targetFoldersFolder = "";
-    private bool _askBeforeFileDeletion = true;
+    string _sourceFolder = "";
+    string _targetFoldersFolder = "";
+    bool _askBeforeFileDeletion = true;
 
     public string SourceFolder
     {

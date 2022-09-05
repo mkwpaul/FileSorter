@@ -58,7 +58,7 @@ public sealed class TaskCompletionNotifier<TResult> : TaskCompletionNotifier
         Task.ContinueWith(UpdateStatus, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, scheduler);
     }
 
-    private void UpdateStatus(Task<TResult> t)
+    void UpdateStatus(Task<TResult> t)
     {
         switch (t.Status)
         {

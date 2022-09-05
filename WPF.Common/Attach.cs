@@ -28,7 +28,7 @@ public class Attach
         textBox.SetValue(SelectAllOnEntry, value);
     }
 
-    private static void OnSelectAllOnEntryChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    static void OnSelectAllOnEntryChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is not TextBox textbox)
             return;
@@ -36,7 +36,7 @@ public class Attach
         textbox.PreviewMouseDown += IgnoreMouse;
     }
 
-    private static void IgnoreMouse(object sender, MouseButtonEventArgs e)
+    static void IgnoreMouse(object sender, MouseButtonEventArgs e)
     {
         if (sender is not TextBox textbox)
             return;
@@ -48,7 +48,7 @@ public class Attach
         }
     }
 
-    private static void Textbox_GotKeyboardFocus(object sender, RoutedEventArgs e)
+    static void Textbox_GotKeyboardFocus(object sender, RoutedEventArgs e)
     {
         if (sender is not TextBox textBox)
             return;

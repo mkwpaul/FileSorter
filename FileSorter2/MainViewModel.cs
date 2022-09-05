@@ -6,7 +6,6 @@ using System.Windows.Data;
 using System.Collections.Specialized;
 using Serilog;
 using WPF.Common.Commands;
-
 namespace FileSorter;
 
 public class MainViewModel : PropertyChangedNotifier
@@ -14,7 +13,6 @@ public class MainViewModel : PropertyChangedNotifier
     string _searchText = "";
     FileInfo? _currentFile;
     ObservableCollection<DirectoryInfo>? _targetFolders;
-    ObservableCollection<FileInfo>? _files;
     ICollectionView? _filteredTargets;
     int _currentFileIndex;
     DirectoryInfo? _currentTargetFolder;
@@ -106,11 +104,6 @@ public class MainViewModel : PropertyChangedNotifier
             SetProperty(ref _targetFolders, value);
             if (_targetFolders != null)
                 _targetFolders.CollectionChanged += OnTargetFoldersContentChanged;
-
-            void OnTargetFoldersContentChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            {
-                collectionView.View?.Refresh();
-            }
         }
     }
 
@@ -163,6 +156,11 @@ public class MainViewModel : PropertyChangedNotifier
                 CurrentFile = Files?.Count > 0 ? Files![CurrentFileIndex] : null;
                 break;
         }
+    }
+
+    void OnTargetFoldersContentChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        collectionView.View?.Refresh();
     }
 
     void SaveToDiskOnChanged(object? sender, PropertyChangedEventArgs _)

@@ -194,7 +194,7 @@ public class MainModule
     }
 
     public void DeleteFile(MainViewModel mv, FileInfo file) => DeleteFile(mv, file, false);
-    private void DeleteFile(MainViewModel mv, FileInfo file, bool skipDialog)
+    public void DeleteFile(MainViewModel mv, FileInfo file, bool skipDialog)
     {
         if (file is null)
             return;

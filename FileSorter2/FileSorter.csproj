@@ -12,6 +12,10 @@
   </PropertyGroup>
 
 	<PropertyGroup>
+		<StartupObject>FileSorter.Program</StartupObject>
+	</PropertyGroup>
+
+	<PropertyGroup>
 		<PublishSingleFile>true</PublishSingleFile>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -57,7 +61,7 @@
 
   <ItemGroup>
     <None Update="settings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 </Project>
