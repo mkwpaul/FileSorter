@@ -11,7 +11,7 @@
     </ResourceDictionary.MergedDictionaries>
 
     <Style TargetType="controls:PathControl">
-        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Padding" Value="3"/>
         <Setter Property="Margin" Value="{adonisUi:Space Offset=3}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="MinWidth" Value="180"/>
@@ -26,18 +26,41 @@
                         </Style>
                     </ControlTemplate.Resources>
 
-                    <GroupBox BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" IsTabStop="False">
+                    <GroupBox 
+                        Background="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        IsTabStop="False"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        Padding="{TemplateBinding Padding}"
+                              >
                         
-                        <StackPanel Orientation="Horizontal">
+                        <DockPanel
+                            HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch">
                             <Label Content="{TemplateBinding Name}"
+                                   DockPanel.Dock="Left"
                                    VerticalAlignment="Center"
                                    Padding="{adonisUi:Space HorizontalOffset=1}"
                                    BorderThickness="0"
                                    IsTabStop="False"
                                    />
+
+                            <Button
+                                DockPanel.Dock="Right"
+                                Margin="0"
+                                BorderThickness="0"
+                                Background="{DynamicResource {x:Static adonisUi:Brushes.Layer1BackgroundBrush}}"
+                                Command="{Binding OpenFileExplorerCommand, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                MinWidth="40"
+                                Content="..."/>
+                            
                             <TextBox BorderThickness="0"
                                      VerticalAlignment="Stretch"
+                                     HorizontalAlignment="Stretch"
                                      VerticalContentAlignment="Center"
+                                     Margin="{TemplateBinding Padding}"
                                      AcceptsTab="False"
                                      AcceptsReturn="False"
                                      local:Attach.SelectAllOnEntry="True"
@@ -46,14 +69,9 @@
                                     Delay=300,
                                     UpdateSourceTrigger=PropertyChanged,
                                     RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-                            <Button
-                                Background="{DynamicResource {x:Static adonisUi:Brushes.Layer1BackgroundBrush}}"
-                                BorderThickness="0"
-                                Command="{Binding OpenFileExplorerCommand, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                MinWidth="40"
-                                Content="..."/>
+                            
 
-                        </StackPanel>
+                        </DockPanel>
                     </GroupBox>
                     
                 </ControlTemplate>
@@ -65,11 +83,11 @@
         <StackPanel Orientation="Vertical" Background="#740000" HorizontalAlignment="Stretch">
             <StackPanel Orientation="Horizontal" Margin="3">
                 <Label Width="100" Content="Description:"/>
-                <Label Content="{Binding Description}"/>
+                <TextBlock TextWrapping="Wrap" Text="{Binding Description}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="3">
                 <Label Width="100" Content="Exception:"/>
-                <TextBlock Text="{Binding Exception.Message}"/>
+                <TextBlock TextWrapping="Wrap" Text="{Binding Exception.Message}"/>
             </StackPanel>
             <!-- <TextBlock Text="{Binding Exception.StackTrace}"/> -->
         </StackPanel>
@@ -96,7 +114,7 @@
 
             <Label Content="Description: " HorizontalAlignment="Left"/>
             <Label Content="Time: " HorizontalAlignment="Left" Grid.Row="1"/>
-            <TextBlock Text="{Binding Description}" Grid.Column="1" HorizontalAlignment="Left" TextAlignment="Left" />
+            <TextBlock TextWrapping="Wrap" Text="{Binding Description}" Grid.Column="1" HorizontalAlignment="Left" TextAlignment="Left" />
             <TextBlock Text="{Binding Time, StringFormat=H:mm:ss}" Grid.Row="1" Grid.Column="1"/>
         </Grid>
     </DataTemplate>

@@ -1,33 +1,11 @@
-﻿using System.IO;
+﻿using System.Collections.ObjectModel;
+using System.IO;
 using System.Text.Json;
 using WPF.Common;
 
 namespace FileSorter;
 
-public class Settings : PropertyChangedNotifier
-{
-    string _sourceFolder = "";
-    string _targetFoldersFolder = "";
-    bool _askBeforeFileDeletion = true;
 
-    public string SourceFolder
-    {
-        get => _sourceFolder;
-        set => SetProperty(ref _sourceFolder, value);
-    }
-
-    public string TargetFoldersFolder
-    {
-        get => _targetFoldersFolder;
-        set => SetProperty(ref _targetFoldersFolder, value);
-    }
-
-    public bool AskBeforeFileDeletion
-    {
-        get => _askBeforeFileDeletion;
-        set => SetProperty(ref _askBeforeFileDeletion, value);
-    }
-}
 
 public static class SettingsReader
 {

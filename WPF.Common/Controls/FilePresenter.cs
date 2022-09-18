@@ -44,7 +44,7 @@ public class FilePresenter : Control
         if (e.NewValue is FileInfo info)
         {
             var gethumbnail = thumbConverter.ConvertAsync(info.FullName);
-            ThumbnailSource = new TaskCompletionNotifier<BitmapSource>(gethumbnail);
+            //ThumbnailSource = new TaskCompletionNotifier<BitmapSource>(gethumbnail);
         }
     }
 
@@ -83,7 +83,7 @@ public class FilePresenter : Control
         {
             case string s:
                 if (System.IO.File.Exists(s))
-                    ThumbnailSource = new TaskCompletionNotifier<BitmapSource>(thumbConverter.ConvertAsync(s));
+                    ;// ThumbnailSource = new TaskCompletionNotifier<BitmapSource>(thumbConverter.ConvertAsync(s));
                 break;
             case FileInfo fileInfo:
                 FileInfo = fileInfo;

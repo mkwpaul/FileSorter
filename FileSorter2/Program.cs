@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WPF.Common;
 using AdonisUI;
 using System.Windows;
+using FileSorter.Services;
 
 namespace FileSorter;
 
@@ -49,10 +50,11 @@ public class Program
             .AddSingleton(inMemoryLogSink)
             .AddSingleton<IUserInteraction, UserInteraction>()
             .AddSingleton(settings)
+            .AddSingleton<ImageCache>()
             .AddSingleton<MainModule>()
             .AddSingleton<MainViewModel>()
             .AddSingleton<MainWindow>()
-            .AddSingleton<FileInfoToImageSourceConverter>()
+            .AddSingleton<Services.FileInfoToImageSourceConverter>()
             ;
         })
             .Build();
@@ -63,7 +65,7 @@ public class Program
         ResourceLocator.SetColorScheme(app.Resources, ResourceLocator.DarkColorScheme);
 
         // resources 
-        app.Resources.Add("fileInfoToImage", host.Services.GetService<FileInfoToImageSourceConverter>());
+        app.Resources.Add("fileInfoToImage", host.Services.GetService<Services.FileInfoToImageSourceConverter>());
 
         app.MainWindow = host.Services.GetService<MainWindow>()!;
         app.MainWindow.ShowDialog();

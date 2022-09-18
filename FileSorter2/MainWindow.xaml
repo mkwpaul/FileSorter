@@ -33,23 +33,49 @@
 
     <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  x:Name="Main">
 
-        <WrapPanel x:Name="SettingsPanel" DockPanel.Dock="Top" 
-            Orientation="Horizontal"
+        <DockPanel x:Name="SettingsPanel" DockPanel.Dock="Top" 
             Margin="3"
-            HorizontalAlignment="Left">
+            HorizontalAlignment="Stretch">
 
-            <GroupBox Margin="{adonisUi:Space Offset=3}" VerticalContentAlignment="Center" IsTabStop="False">
+            <common:PathControl Name="SourceFolder" Path="{Binding Settings.SourceFolder}"/>
+
+            <GroupBox 
+                Margin="{adonisUi:Space Offset=3}" 
+                VerticalContentAlignment="Center" 
+                IsTabStop="False" 
+                DockPanel.Dock="Left">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Label Content="Ask before Deletion" Margin="{adonisUi:Space HorizontalOffset=3}" IsTabStop="False"/>
                     <CheckBox IsChecked="{Binding Settings.AskBeforeFileDeletion}" Height="20" Width="30"/>
                 </StackPanel>
             </GroupBox>
 
-            <common:PathControl Name="TargetFolder" Path="{Binding Settings.TargetFoldersFolder}"/>
-            <common:PathControl Name="SourceFolder" Path="{Binding Settings.SourceFolder}"/>
+            <Button 
+                Margin="{adonisUi:Space Offset=3}" 
+                MinWidth="50"
+                DockPanel.Dock="Left"
+                VerticalAlignment="Stretch"
+                Content="Left"
+                Command="{Binding GoToPreviousCommand}"/>
+
+            <Button 
+                Margin="{adonisUi:Space Offset=3}" 
+                MinWidth="50"
+                DockPanel.Dock="Left"
+                VerticalAlignment="Stretch"
+                Content="Right"
+                Command="{Binding GoToNextCommand}"
+                />
+
+
+            <GroupBox Margin="{adonisUi:Space Offset=3}" DockPanel.Dock="Right">
+                <TextBlock VerticalAlignment="Center">
+                        <Run>Files left: </Run> <Run><Binding Path="Files.Count" Mode="OneWay"/></Run>
+                </TextBlock>
+            </GroupBox>
+
 
             <GroupBox x:Name="MoveToPanel"
-                DockPanel.Dock="Top" 
                 Margin="{adonisUi:Space VerticalOffset=4}"
                 HorizontalAlignment="Center"
                 MinWidth="400">
@@ -79,8 +105,8 @@
                             <KeyBinding Key="Return" Command="{Binding OnEnterCommand}"/>
                             <KeyBinding Key="Return" Modifiers="Shift" Command="{Binding CreateNewFolderFromSearchCommand}"/>
                             <KeyBinding Key="Right" Modifiers="Shift" Command="{Binding GoToNextCommand}"/>
-                            <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding GoToNextCommand}"/>
                             <KeyBinding Key="Left" Modifiers="Shift" Command="{Binding GoToPreviousCommand}"/>
+                            <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding GoToNextCommand}"/>
                             <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding DeleteFileCommand}" CommandParameter="{Binding CurrentFile}"/>
                             <KeyBinding Key="D" Modifiers="Ctrl" Command="{Binding DeleteFileCommand}" CommandParameter="{Binding CurrentFile}"/>
                         </TextBox.InputBindings>
@@ -88,25 +114,45 @@
                 </DockPanel>
 
             </GroupBox>
+       </DockPanel>
 
-            <GroupBox Margin="{adonisUi:Space Offset=3}">
-                <TextBlock VerticalAlignment="Center">
-                        <Run>Files left: </Run> <Run><Binding Path="Files.Count" Mode="OneWay"/></Run>
-                </TextBlock>
-            </GroupBox>
+        <GroupBox
+            x:Name="TargetFoldersPanel" 
+            DockPanel.Dock="Left"
+            MinWidth="100"
+            Width="400"
+            MaxWidth="800">
 
-        </WrapPanel>
-
-            <GroupBox 
-                x:Name="TargetFoldersPanel" 
-                DockPanel.Dock="Left"
-                MinWidth="100"
-                Width="400"
-                MaxWidth="800">
+            <DockPanel>
+                <Button DockPanel.Dock="Top" Content="Add" Command="{Binding AddFolderSource}"/>
+                <ItemsControl 
+                    DockPanel.Dock="Top"
+                    HorizontalAlignment="Stretch"
+                    ItemsSource="{Binding Settings.TargetSources}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type local:TargetFolderSource}">
+                            <StackPanel Orientation="Horizontal">
+                                <Button 
+                                    Margin="0" 
+                                    BorderThickness="0"
+                                    Content="X" 
+                                    Command="{Binding DataContext.RemoveFolderSource, 
+                                            RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
+                                    CommandParameter="{Binding}"/>
+                                <common:PathControl 
+                                    Path="{Binding Folder}" 
+                                    Margin="0" 
+                                    Padding="1"
+                                    BorderThickness="0"
+                                    HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
                 <ListBox x:Name="folders" ItemsSource="{Binding FilteredTargets}" SelectedItem="{Binding CurrentTargetFolder}" Margin="3">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Width="300" MinWidth="300"/>
+                            <WrapPanel Width="{Binding Width, ElementName=TargetFoldersPanel, Delay=200}"/>
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
 
@@ -116,17 +162,21 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </GroupBox>
+            </DockPanel>
+        </GroupBox>
 
         <controls:DockPanelSplitter DockPanel.Dock="Left"/>
 
+        <GroupBox DockPanel.Dock="Right">
+            
         <common:LogView 
             HorizontalAlignment="Stretch"
             Margin="0"
             LogsSource="{Binding Logs}" 
-            DockPanel.Dock="Bottom"/>
+            DockPanel.Dock="Right"/>
+        </GroupBox>
 
-        <controls:DockPanelSplitter DockPanel.Dock="Bottom"/>
+        <controls:DockPanelSplitter DockPanel.Dock="Right"/>
 
         <ToolBar x:Name="Toolbar" Visibility="Collapsed" DockPanel.Dock="Bottom" IsOverflowOpen="False">
             <Button 
@@ -152,16 +202,20 @@
         <WrapPanel x:Name="ImageArea" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical">
             <Label FontSize="80" Content="{Binding CurrentTargetFolder.Name}" HorizontalAlignment="Center"/>
             <Label Content="{Binding CurrentFile.Name}" HorizontalAlignment="Center" DockPanel.Dock="Bottom"/>
-            <Image MaxHeight="700" Focusable="True" IsHitTestVisible="True"
-                       Source="{Binding CurrentFile, Converter={StaticResource fileInfoToImage}}">
-                <Image.ToolTip>
-                    <StackPanel>
-                        <TextBlock Text="{Binding CurrentFile.Name}"/>
-                        <TextBlock Text="{Binding CurrentFile.LastWriteTime}"/>
-                        <TextBlock Text="{Binding CurrentFile.Length, Converter={StaticResource byteCountFormatter}}"/>
-                    </StackPanel>
-                </Image.ToolTip>
-            </Image>
+            <Border MinHeight="20" MinWidth="20" Background="DarkBlue">
+                
+                <Image MaxHeight="700" Focusable="True" IsHitTestVisible="True"
+                       
+                           Source="{Binding CurrentFile, Converter={StaticResource fileInfoToImage}}">
+                    <Image.ToolTip>
+                        <StackPanel>
+                            <TextBlock Text="{Binding CurrentFile.Name}"/>
+                            <TextBlock Text="{Binding CurrentFile.LastWriteTime}"/>
+                            <TextBlock Text="{Binding CurrentFile.Length, Converter={StaticResource byteCountFormatter}}"/>
+                        </StackPanel>
+                    </Image.ToolTip>
+                </Image>
+            </Border>
 
         </WrapPanel>
 

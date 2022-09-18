@@ -51,6 +51,20 @@ public class PathControl : Control
         }
     );
 
+    public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register
+    (
+        nameof(Header),
+        typeof(object),
+        typeof(PathControl),
+        null
+    );
+
+    public object? Header
+    {
+        get => GetValue(HeaderProperty);
+        set => SetValue(HeaderProperty, value);
+    }
+
     public string Path
     {
         get => GetValue(PathProperty)?.ToString() ?? "";

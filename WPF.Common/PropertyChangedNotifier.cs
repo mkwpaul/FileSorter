@@ -42,4 +42,9 @@ public abstract class PropertyChangedNotifier : INotifyPropertyChanged
 
         NotifyPropertyChanged(e.PropertyName);
     }
+
+    public void ClearNotifications()
+    {
+        PropertyChanged = null;
+    }
 }

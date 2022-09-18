@@ -9,12 +9,28 @@ namespace FileSorter;
 
 public class Log : ObservableCollection<IActionLog>, ILogEventSink
 {
+    private int limit = 100;
+
+    public int Limit
+    {
+        get => limit;
+        set
+        {
+            limit = value;
+            CheckLimit();
+        }
+    }
+
     public void Emit(LogEvent log)
     {
         var entry = ToActionLog(log);
         Add(entry);
+        CheckLimit();
+    }
 
-        if (Count > 100)
+    void CheckLimit()
+    {
+        if (Count > Limit)
         {
             for (int i = 0; i < 50; i++)
                 RemoveAt(0);

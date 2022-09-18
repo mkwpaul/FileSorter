@@ -4,8 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using WPF.Common;
 using System.Windows;
+using System.Collections.ObjectModel;
 
 namespace FileSorter;
+
+public enum FolderSourceType { SubFolders, IndividualFolder };
+
+public record TargetFolder(TargetFolderSource Source, string Name);
 
 public class MainModule
 {
@@ -20,45 +25,88 @@ public class MainModule
         _settings = settings;
     }
 
-    public void RemoveFile(MainViewModel mv, FileInfo? info)
+    #region Settings
+
+    public void AddNewSource(MainViewModel mv)
+    {
+        var folderSource = new TargetFolderSource();
+        folderSource.PropertyChanged += (s, e) =>
+        {
+            mv.TargetFolders = GetDirectories(_settings.TargetSources);
+        };
+
+        _settings.TargetSources.Add(folderSource);
+    }
+
+    public void RemoveSource(MainViewModel mv, TargetFolderSource folderSource)
+    {
+        _settings.TargetSources.Remove(folderSource);
+        folderSource.ClearNotifications();
+        mv.TargetFolders = GetDirectories(_settings.TargetSources);
+    }
+
+    public ObservableCollection<DirectoryInfo> GetDirectories(IEnumerable<TargetFolderSource> sources)
+    {
+        // hashset to keep track of entries and check for duplicates.
+        var hashset = new HashSet<string>();
+        var result = new ObservableCollection<DirectoryInfo>();
+        foreach(var source in sources)
+            ReadTargetFolderSource(result, hashset, source);
+
+        return result;
+    }
+
+    void ReadTargetFolderSource(ObservableCollection<DirectoryInfo> result, HashSet<string> hashset, TargetFolderSource source)
+    {
+        try
+        {
+            if (!Directory.Exists(source.Folder))
+                return;
+
+            if (source.FolderType == FolderSourceType.IndividualFolder)
+            {
+                if (hashset.Add(source.Folder))
+                    result.Add(new DirectoryInfo(source.Folder));
+            }
+
+            else if (source.FolderType == FolderSourceType.SubFolders)
+            {
+                string[] dics = Directory.GetDirectories(source.Folder);
+                foreach (var dic in dics)
+                {
+                    if (hashset.Add(dic))
+                    {
+                        var info = new DirectoryInfo(dic);
+                        result.Add(info);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Error occured reading folder {targetSource}", source.Folder);
+        }
+    }
+
+    #endregion
+
+    public static void RemoveFile(MainViewModel mv, FileInfo? info)
     {
         // Remove From MainViewModel so the file can be moved and isn't blocked by ourselves.
         if (info is null)
             return;
 
         mv.Files?.Remove(info);
-
-        if (info == mv.CurrentFile)
-        {
-            mv.CurrentFileIndex = mv.CurrentFileIndex;
-            if (mv.Files?.Count > 0)
-                mv.CurrentFile = mv.Files?[mv.CurrentFileIndex];
-            else
-                mv.CurrentFile = null;
-        }
-    }
-
-    public void ReadTargetFoldersFolder(MainViewModel mv) => ReadTargetFoldersFolder(mv, mv.Settings?.TargetFoldersFolder);
-    public void ReadTargetFoldersFolder(MainViewModel mv, string? path)
-    {
-        if (path == null)
-        {
-            mv.TargetFolders = null;
+        if (info != mv.CurrentFile)
             return;
-        }
 
-        try
-        {
-            mv.TargetFolders = Directory.GetDirectories(path)
-                .Select(x => new DirectoryInfo(x))
-                .OrderBy(x => x.Name.Length)
-                .ToObservable();
-        }
-        catch (Exception ex)
-        {
-            _log.Error(ex, "");
-        }
+        mv.CurrentFileIndex = mv.CurrentFileIndex;
+        if (mv.Files?.Count > 0)
+            mv.CurrentFile = mv.Files?[mv.CurrentFileIndex];
+        else
+            mv.CurrentFile = null;
     }
+
 
     public void ReadSourceFolder(MainViewModel mv) => ReadSourceFolder(mv, mv.Settings?.SourceFolder);
     public void ReadSourceFolder(MainViewModel mv, string? sourceFolder)

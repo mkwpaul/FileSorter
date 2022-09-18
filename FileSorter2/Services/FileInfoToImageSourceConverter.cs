@@ -6,15 +6,17 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace WPF.Common.Converters;
+namespace FileSorter.Services;
 
 public class FileInfoToImageSourceConverter : IValueConverter
 {
     readonly ILogger? _log;
+    readonly ImageCache _cache;
 
-    public FileInfoToImageSourceConverter(ILogger? logger)
+    public FileInfoToImageSourceConverter(ILogger? logger, ImageCache cache)
     {
         _log = logger?.ForContext<FileInfoToImageSourceConverter>();
+        _cache = cache;
     }
 
     public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -27,39 +29,14 @@ public class FileInfoToImageSourceConverter : IValueConverter
         };
     }
 
-    public BitmapSource ConvertAsync(string filePath)
-    {
-        _log?.Verbose("Load Image {filePath}", filePath);
-        switch (Path.GetExtension(filePath).ToLower())
-        {
-            case ".png":
-            case ".jpg":
-            case ".jpeg":
-            case ".bmp":
-            case ".gif":
-                _log?.Verbose("Is known image type");
-                return ReadImage(filePath);
-        }
-
-        _log?.Verbose("Is not known image type. Get thumbnail Image from Shell...");
-
-        //return await Task.Run(() =>
-        {
-            using var shellFile = ShellFile.FromFilePath(filePath);
-            var source = shellFile?.Thumbnail?.ExtraLargeBitmapSource;
-            if (source is not null)
-            {
-                return source;
-            }
-
-            _log?.Verbose("Thumbnail source for {filepath} was null", filePath);
-            return new BitmapImage();
-        }
-        //, token);
-    }
-
     object? GetImageSourceFromFileInfo(string filePath, string extension)
     {
+        if (_cache.TryGetImageFromCache(filePath, out var image))
+        {
+            _log?.Verbose("Retrieved Image {filePath} from Cache", filePath);
+            return image;
+        }
+
         _log?.Verbose("Reading Image: {filePath}", filePath);
         try
         {
@@ -85,7 +62,7 @@ public class FileInfoToImageSourceConverter : IValueConverter
         }
     }
 
-    BitmapImage ReadImage(string filePath)
+    unsafe BitmapImage ReadImage(string filePath)
     {
         _log?.Verbose("reading Image from known Image type");
 
@@ -95,18 +72,20 @@ public class FileInfoToImageSourceConverter : IValueConverter
         // - the file must not be cached for too, otherwise we quickly run out of memory.
         //   (the build in caching is too long)
     
-        using var stream = File.OpenRead(filePath);
-        var memoryStream = new MemoryStream();
-
-        stream.CopyTo(memoryStream);
-
-        stream.Seek(0, SeekOrigin.Begin);
+        using var fileStream = File.OpenRead(filePath);
+        // var memoryStream = new MemoryStream();
+        // 
+        // fileStream.CopyTo(memoryStream);
+        // 
+        // fileStream.Seek(0, SeekOrigin.Begin);
 
         var bitmap = new BitmapImage();
         bitmap.BeginInit();
         bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.StreamSource = stream;
+        bitmap.StreamSource = fileStream;
         bitmap.EndInit();
+        //_cache.Add(filePath, bitmap);
+
         return bitmap;
     }
 

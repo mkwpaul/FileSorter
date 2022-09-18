@@ -6,7 +6,40 @@ using System.Windows.Data;
 using System.Collections.Specialized;
 using Serilog;
 using WPF.Common.Commands;
+
 namespace FileSorter;
+
+public class TargetFolderSource : PropertyChangedNotifier
+{
+    string folder = ""; FolderSourceType folderType = FolderSourceType.SubFolders;
+
+    public string Folder
+    {
+        get => folder;
+        set => SetProperty(ref folder, value);
+    }
+
+    public FolderSourceType FolderType
+    {
+        get => folderType;
+        set => SetProperty(ref folderType, value);
+    }
+}
+
+public class Settings : PropertyChangedNotifier
+{
+    string _sourceFolder = "";
+    string _targetFoldersFolder = "";
+    bool _askBeforeFileDeletion = true;
+
+    public string SourceFolder { get => _sourceFolder; set => SetProperty(ref _sourceFolder, value); }
+
+    public string TargetFoldersFolder { get => _targetFoldersFolder; set => SetProperty(ref _targetFoldersFolder, value); }
+
+    public bool AskBeforeFileDeletion { get => _askBeforeFileDeletion; set => SetProperty(ref _askBeforeFileDeletion, value); }
+
+    public ObservableCollection<TargetFolderSource> TargetSources { get; } = new();
+}
 
 public class MainViewModel : PropertyChangedNotifier
 {
@@ -37,19 +70,24 @@ public class MainViewModel : PropertyChangedNotifier
         };
 
         main.ReadSourceFolder(this);
-        main.ReadTargetFoldersFolder(this);
+        main.CreateNewFolderFromSearch(this);
 
         GoToNextCommand = new RelayCommand(() => main.GoToNextFile(this));
         GoToPreviousCommand = new RelayCommand(() => main.GoToPreviousFile(this));
         DeleteFileCommand = new RelayCommand<FileInfo>(x => main.DeleteFile(this, x));
-        OpenInExplorerCommand = new RelayCommand<FileInfo>(x => main.OpenInExplorer(x));
+        OpenInExplorerCommand = new RelayCommand<FileInfo>(main.OpenInExplorer);
         MoveToTargetFolderCommand = new RelayCommand(() => main.MoveToTargetFolder(this));
         SelectFirstFolderCommand = new RelayCommand(() => main.SelectFirstFolder(this));
         OnEnterCommand = new RelayCommand(() => main.OnEnter(this));
         CreateNewFolderFromSearchCommand = new RelayCommand(() => main.CreateNewFolderFromSearch(this));
+
+        AddFolderSource = new RelayCommand(() => main.AddNewSource(this));
+        RemoveFolderSource = new RelayCommand<TargetFolderSource>(x => main.RemoveSource(this, x));
     }
 
     public Log Logs { get; }
+    public Command AddFolderSource { get; }
+    public Command RemoveFolderSource { get; }
     public Command GoToNextCommand { get; }
     public Command GoToPreviousCommand { get; }
     public Command DeleteFileCommand { get; }
@@ -137,9 +175,6 @@ public class MainViewModel : PropertyChangedNotifier
                 SearchText = "";
                 CurrentTargetFolder = temp;
                 break;
-            case nameof(Settings.TargetFoldersFolder):
-                _main.ReadTargetFoldersFolder(this);
-                break;
             case nameof(Settings.SourceFolder):
                 _main.ReadSourceFolder(this);
                 break;
@@ -181,5 +216,10 @@ public class MainViewModel : PropertyChangedNotifier
             return true;
 
         return dicInfo.Name.Contains(SearchText, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    internal void FolderSourcePropertyChange(object? sender, PropertyChangedEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 }
