@@ -1,5 +1,5 @@
 ﻿using AdonisUI.Controls;
-using System.Diagnostics;
+using System.IO;
 using WPF.Common;
 
 namespace FileSorter;
@@ -43,6 +43,24 @@ public static class DoesUserWantTo
             .AddAnswer(FileCollisionReaction.Cancel, "Cancel")
             .SetDefault(FileCollisionReaction.Overwrite)
             .Show(interaction);
+    }
+
+    public static object SelectFolder(this IUserInteraction interaction, string searchText, ICollection<TargetFolderSource> values)
+    {
+        var model = MessageBuilder.CreateBase()
+            .SetCaption(question)
+            .SetText($"Do you want to create a new Folder with the name {searchText}");
+
+        foreach (var value in values)
+        {
+            if (value.FolderType == FolderSourceType.SubFolders)
+                model.AddAnswer(value, Path.GetDirectoryName(value.Folder));
+        }
+
+        model.AddAnswer(BooleanResult.No);
+
+        var result = model.Show(interaction);
+        return result;
     }
 }
 

@@ -3,7 +3,6 @@ using Serilog;
 using System.Globalization;
 using System.IO;
 using System.Windows.Data;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace WPF.Common.Converters;
@@ -27,35 +26,32 @@ public class FileInfoToImageSourceConverter : IValueConverter
         };
     }
 
-    public BitmapSource ConvertAsync(string filePath)
+    public BitmapSource Convert(string filePath)
     {
         _log?.Verbose("Load Image {filePath}", filePath);
-        switch (Path.GetExtension(filePath).ToLower())
+        var extension = Path.GetExtension(filePath).ToLower();
+        switch (extension)
         {
             case ".png":
             case ".jpg":
             case ".jpeg":
             case ".bmp":
             case ".gif":
-                _log?.Verbose("Is known image type");
+                _log?.Verbose("Is known file extension (extension = {extension}", extension);
                 return ReadImage(filePath);
         }
 
-        _log?.Verbose("Is not known image type. Get thumbnail Image from Shell...");
+        _log?.Verbose("File Extension {extension] is not known image type. Get thumbnail Image from Shell...", extension);
 
-        //return await Task.Run(() =>
+        using var shellFile = ShellFile.FromFilePath(filePath);
+        var source = shellFile?.Thumbnail?.ExtraLargeBitmapSource;
+        if (source is not null)
         {
-            using var shellFile = ShellFile.FromFilePath(filePath);
-            var source = shellFile?.Thumbnail?.ExtraLargeBitmapSource;
-            if (source is not null)
-            {
-                return source;
-            }
-
-            _log?.Verbose("Thumbnail source for {filepath} was null", filePath);
-            return new BitmapImage();
+            return source;
         }
-        //, token);
+
+        _log?.Verbose("Thumbnail source for {filepath} was null", filePath);
+        return new BitmapImage();
     }
 
     object? GetImageSourceFromFileInfo(string filePath, string extension)

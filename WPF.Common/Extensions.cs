@@ -1,16 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WPF.Common;
 
 public static class Extensions
 {
+    public static void ForEach<T>(this IEnumerable<T> ts, Action<T> action)
+    {
+        foreach (var t in ts)
+            action(t);
+    }
+
     public static ObservableCollection<T> ToObservable<T>(this IEnumerable<T> enumerable)
     {
         return new ObservableCollection<T>(enumerable);
@@ -44,8 +44,6 @@ public static class Extensions
     {
         return new TimeOnly(dateTIme.TimeOfDay.Ticks);
     }
-
-
 
     public static bool ToBool(this object obj)
     {

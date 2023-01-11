@@ -12,7 +12,15 @@ public static class MessageBuilder
         };
     }
 
-    public static MessageBoxModel<TEnum> AddAnswer<TEnum>(this MessageBoxModel<TEnum> model, TEnum answer, string? caption = null) where TEnum : Enum
+    public static MessageBoxModel<object> CreateBase()
+    {
+        return new MessageBoxModel<object>()
+        {
+            Buttons = new List<IMessageBoxButtonModel>(),
+        };
+    }
+
+    public static MessageBoxModel<TEnum> AddAnswer<TEnum>(this MessageBoxModel<TEnum> model, TEnum answer, string? caption = null) //where TEnum : Enum
     {
         caption ??= answer.ToString();
 
@@ -50,16 +58,6 @@ public static class MessageBuilder
         };
 
         model.SetDefault(BooleanResult.Yes);
-        return model;
-    }
-
-    [Obsolete]
-    public static MessageBoxModel SetDefault(this MessageBoxModel model, ValueType id)
-    {
-        var defaultBtn = model.Buttons.FirstOrDefault(x => x.Id.Equals(id));
-        if (defaultBtn != null)
-            defaultBtn.IsDefault = true;
-
         return model;
     }
 

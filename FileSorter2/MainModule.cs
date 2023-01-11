@@ -2,27 +2,23 @@
 using Serilog;
 using System.Diagnostics;
 using System.IO;
-using WPF.Common;
+using System.Security;
 using System.Windows;
-using System.Collections.ObjectModel;
+using WPF.Common;
 
 namespace FileSorter;
 
-public enum FolderSourceType { SubFolders, IndividualFolder };
 
-public record TargetFolder(TargetFolderSource Source, string Name);
 
 public class MainModule
 {
     readonly IUserInteraction _doesUserWant;
-    readonly Settings _settings;
     readonly ILogger _log;
 
-    public MainModule(ILogger logger, Settings settings, IUserInteraction userInteraction)
+    public MainModule(ILogger logger, IUserInteraction userInteraction)
     {
         _log = logger.ForContext<MainModule>();
         _doesUserWant = userInteraction;
-        _settings = settings;
     }
 
     #region Settings
@@ -32,89 +28,97 @@ public class MainModule
         var folderSource = new TargetFolderSource();
         folderSource.PropertyChanged += (s, e) =>
         {
-            mv.TargetFolders = GetDirectories(_settings.TargetSources);
+            UpdateTargetFoldersFromTargetSources(mv.Settings, mv.State);
         };
 
-        _settings.TargetSources.Add(folderSource);
+        mv.Settings.TargetSources.Add(folderSource);
     }
 
-    public void RemoveSource(MainViewModel mv, TargetFolderSource folderSource)
+    public void RemoveSource(IWorld mv, TargetFolderSource folderSource)
     {
-        _settings.TargetSources.Remove(folderSource);
+        mv.Settings.TargetSources.Remove(folderSource);
         folderSource.ClearNotifications();
-        mv.TargetFolders = GetDirectories(_settings.TargetSources);
+        UpdateTargetFoldersFromTargetSources(mv.Settings, mv.State);
     }
 
-    public ObservableCollection<DirectoryInfo> GetDirectories(IEnumerable<TargetFolderSource> sources)
+    public void UpdateTargetFoldersFromTargetSources(Settings settings, State state)
     {
-        // hashset to keep track of entries and check for duplicates.
-        var hashset = new HashSet<string>();
-        var result = new ObservableCollection<DirectoryInfo>();
-        foreach(var source in sources)
-            ReadTargetFolderSource(result, hashset, source);
+        _log.Information("Reading TargetFolders from targetFolder sources...");
 
-        return result;
-    }
+        var newValues = GetDirectories(settings.TargetSources);
+        state.TargetFolders.Clear();
+        foreach (var entry in newValues)
+            state.TargetFolders.Add(entry);
 
-    void ReadTargetFolderSource(ObservableCollection<DirectoryInfo> result, HashSet<string> hashset, TargetFolderSource source)
-    {
-        try
+        List<DirectoryInfo> GetDirectories(IEnumerable<TargetFolderSource> sources)
         {
-            if (!Directory.Exists(source.Folder))
-                return;
+            // hashset to keep track of entries and check for duplicates.
+            var hashset = new HashSet<string>();
+            var result = new List<DirectoryInfo>();
+            foreach (var source in sources)
+                ReadTargetFolderSource(result, hashset, source);
 
-            if (source.FolderType == FolderSourceType.IndividualFolder)
-            {
-                if (hashset.Add(source.Folder))
-                    result.Add(new DirectoryInfo(source.Folder));
-            }
-
-            else if (source.FolderType == FolderSourceType.SubFolders)
-            {
-                string[] dics = Directory.GetDirectories(source.Folder);
-                foreach (var dic in dics)
-                {
-                    if (hashset.Add(dic))
-                    {
-                        var info = new DirectoryInfo(dic);
-                        result.Add(info);
-                    }
-                }
-            }
+            return result;
         }
-        catch (Exception ex)
+
+        void ReadTargetFolderSource(List<DirectoryInfo> result, HashSet<string> hashset, TargetFolderSource source)
         {
-            _log.Error(ex, "Error occured reading folder {targetSource}", source.Folder);
+            try
+            {
+                if (!Directory.Exists(source.Folder))
+                    return;
+
+
+                var folders = (source.FolderType) switch
+                {
+                    FolderSourceType.IndividualFolder => new string[] { source.Folder },
+                    FolderSourceType.SubFolders => Directory.GetDirectories(source.Folder),
+                    FolderSourceType.SubFoldersRecursive => Directory.GetDirectories(source.Folder, "", System.IO.SearchOption.AllDirectories),
+                };
+
+                folders
+                    .Where(hashset.Add)
+                    .Select(x => new DirectoryInfo(x))
+                    .ForEach(result.Add);
+            }
+            catch (Exception ex)
+            {
+                if (ex is SecurityException or IOException)
+                    _log.Error(ex, "Error occured reading folder {targetSource}", source.Folder);
+                else
+                    throw;
+            }
         }
     }
 
     #endregion
 
-    public static void RemoveFile(MainViewModel mv, FileInfo? info)
+    static void RemoveFile(MainViewModel mv, FileInfo? info)
     {
         // Remove From MainViewModel so the file can be moved and isn't blocked by ourselves.
         if (info is null)
             return;
 
-        mv.Files?.Remove(info);
-        if (info != mv.CurrentFile)
+        mv.State.Files?.Remove(info);
+        if (info != mv.State.CurrentFile)
             return;
 
-        mv.CurrentFileIndex = mv.CurrentFileIndex;
-        if (mv.Files?.Count > 0)
-            mv.CurrentFile = mv.Files?[mv.CurrentFileIndex];
+        mv.State.CurrentFileIndex = mv.State.CurrentFileIndex;
+        if (mv.State.Files?.Count > 0)
+            mv.State.CurrentFile = mv.State.Files?[mv.State.CurrentFileIndex];
         else
-            mv.CurrentFile = null;
+            mv.State.CurrentFile = null;
     }
-
 
     public void ReadSourceFolder(MainViewModel mv) => ReadSourceFolder(mv, mv.Settings?.SourceFolder);
     public void ReadSourceFolder(MainViewModel mv, string? sourceFolder)
     {
-        mv.Files.Clear();
+
+        _log.Information("Reading files from sourceFolder {sourceFolder}...", sourceFolder);
+        mv.State.Files.Clear();
         if (sourceFolder == null)
         {
-            mv.CurrentFile = null;
+            mv.State.CurrentFile = null;
             return;
         }
 
@@ -122,31 +126,38 @@ public class MainModule
         {
             var newEntries = Directory.GetFiles(sourceFolder)
                 .Select(f => new FileInfo(f))
-                .OrderBy(x => x.Name, StringComparer.Ordinal);
+                .OrderBy(x => x.Name, StringComparer.Ordinal)
+                .ToList();
+
+            _log.Information("Found {fileCount} files", newEntries.Count);
+
 
             foreach (var item in newEntries)
-                mv.Files.Add(item);
-                
-            mv.CurrentFile = mv.Files.FirstOrDefault();
+                mv.State.Files.Add(item);
+
+            mv.State.CurrentFile = mv.State.Files.FirstOrDefault();
         }
         catch (Exception ex)
         {
-            _log.Error(ex, "");
+            _log.Error(ex, "Error reading files from sourceFolder {sourceFolder}", sourceFolder);
         }
     }
 
-    public void CreateNewFolderFromSearch(MainViewModel Mv)
+    public void CreateNewFolderFromSearch(MainViewModel mv)
     {
-        if (string.IsNullOrWhiteSpace(Mv.SearchText))
+        if (string.IsNullOrWhiteSpace(mv.State.SearchText))
             return;
-        if (_settings.SourceFolder is null)
-            return;
-        if (_settings.TargetFoldersFolder is null)
+        if (mv.Settings.SourceFolder is null)
             return;
 
-        var newFolder = Mv.SearchText.EscapeFileName();
+        var test = _doesUserWant.SelectFolder(mv.State.SearchText, mv.Settings.TargetSources);
+        if (test is BooleanResult.No)
+            return;
+        if (test is not TargetFolderSource source)
+            return;
 
-        var newFolderFull = Path.Combine(_settings.TargetFoldersFolder, newFolder);
+        var newFolder = mv.State.SearchText.EscapeFileName();
+        var newFolderFull = Path.Combine(source.Folder, newFolder);
 
         if (!_doesUserWant.CreateFolder(newFolderFull))
             return;
@@ -165,38 +176,38 @@ public class MainModule
         if (Directory.Exists(newFolderFull))
         {
             var newDicInfo = new DirectoryInfo(newFolderFull);
-            Mv.TargetFolders?.Add(newDicInfo);
-            Mv.CurrentTargetFolder = newDicInfo;
+            mv.State.TargetFolders?.Add(newDicInfo);
+            mv.State.CurrentTargetFolder = newDicInfo;
 
             if (_doesUserWant.MoveFileToNewFolder())
-                MoveToTargetFolder(Mv);
+                MoveToTargetFolder(mv);
         }
     }
 
-    public void OnEnter(MainViewModel Mv)
+    public void OnEnter(MainViewModel mv)
     {
-        if (Mv.CurrentTargetFolder is null)
-            SelectFirstFolder(Mv);
+        if (mv.State.CurrentTargetFolder is null)
+            SelectFirstFolder(mv);
         else
-            MoveToTargetFolder(Mv);
+            MoveToTargetFolder(mv);
     }
 
-    public void SelectFirstFolder(MainViewModel Mv)
+    public void SelectFirstFolder(MainViewModel mv)
     {
-        var entry = Mv.FilteredTargets?.OfType<DirectoryInfo>().FirstOrDefault();
-        Mv.CurrentTargetFolder = entry;
+        var entry = mv.State.FilteredTargets?.OfType<DirectoryInfo>().FirstOrDefault();
+        mv.State.CurrentTargetFolder = entry;
     }
 
     public void MoveToTargetFolder(MainViewModel mv)
     {
-        if (mv.CurrentFile is null)
+        if (mv.State.CurrentFile is null)
             return;
-        if (mv.CurrentTargetFolder is null)
+        if (mv.State.CurrentTargetFolder is null)
             return;
 
-        var currentTarget = mv.CurrentTargetFolder;
-        var newFullPath = Path.Combine(currentTarget.FullName, mv.CurrentFile.Name);
-        var file = mv.CurrentFile;
+        var currentTarget = mv.State.CurrentTargetFolder;
+        var newFullPath = Path.Combine(currentTarget.FullName, mv.State.CurrentFile.Name);
+        var file = mv.State.CurrentFile;
 
         bool cancel = CheckForFileConflict(mv, newFullPath, file);
         if (cancel)
@@ -209,14 +220,11 @@ public class MainModule
             {
                 File.Move(file.FullName, newFullPath, true);
                 RemoveFile(mv, file);
-
-                Application.Current.Dispatcher.InvokeAsync(() =>
-                    _log.Information("Moved {file} from {directory} to {currentTarget}", file.Name, file.Directory, currentTarget));
+                _log.Information("Moved {file} from {directory} to {currentTarget}", file.Name, file.Directory, currentTarget);
             }
             catch (IOException ex)
             {
-                Application.Current.Dispatcher.InvokeAsync(() =>
-                    _log.Error(ex, "MoveToTargetFolder Failed."));
+                _log.Error(ex, "MoveToTargetFolder Failed.");
             }
         });
     }
@@ -242,15 +250,14 @@ public class MainModule
     }
 
     public void DeleteFile(MainViewModel mv, FileInfo file) => DeleteFile(mv, file, false);
-    public void DeleteFile(MainViewModel mv, FileInfo file, bool skipDialog)
+    void DeleteFile(MainViewModel mv, FileInfo file, bool skipDialog)
     {
+        _log.Information("Deleting {file}...", file.Name);
         if (file is null)
             return;
 
-        if (!skipDialog && _settings.AskBeforeFileDeletion && !_doesUserWant.DeleteFile())
-        {
+        if (!skipDialog && mv.Settings.AskBeforeFileDeletion && !_doesUserWant.DeleteFile())
             return;
-        }
 
         GoToNextFile(mv);
         try
@@ -288,18 +295,18 @@ public class MainModule
 
     public void GoToPreviousFile(MainViewModel mv)
     {
-        if (mv.Files is null || mv.Files.Count == 0)
+        if (mv.State.Files is null || mv.State.Files.Count == 0)
             return;
 
-        int newIndex = mv.CurrentFileIndex - 1;
-        mv.CurrentFileIndex = newIndex < 0 ? mv.Files.Count - 1 : newIndex;
+        int newIndex = mv.State.CurrentFileIndex - 1;
+        mv.State.CurrentFileIndex = newIndex < 0 ? mv.State.Files.Count - 1 : newIndex;
     }
 
-    public void GoToNextFile(MainViewModel mv)
+    public void GoToNextFile(IWorld mv)
     {
-        if (mv.Files is null || mv.Files.Count == 0)
+        if (mv.State.Files is null || mv.State.Files.Count == 0)
             return;
-        int newIndex = mv.CurrentFileIndex + 1;
-        mv.CurrentFileIndex = newIndex >= mv.Files.Count ? 0 : newIndex;
+        int newIndex = mv.State.CurrentFileIndex + 1;
+        mv.State.CurrentFileIndex = newIndex >= mv.State.Files.Count ? 0 : newIndex;
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace WPF.Common.Commands;
 
@@ -66,7 +61,6 @@ public class ListBoxNavigationCommand : Command
     void NavigatePrevious(ListBox listbox)
     {
         int nextIndex = (listbox.SelectedIndex - 1).LowerLimit(-1);
-
         if (nextIndex == -1)
         {
             if (WrapNavigation)

@@ -8,8 +8,9 @@
         mc:Ignorable="d"
         xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
         xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
-        xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI" xmlns:controls="clr-namespace:System.Windows.Controls;assembly=DockPanelSplitter"
-                             Title="MainWindow" 
+        xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+        xmlns:controls="clr-namespace:System.Windows.Controls;assembly=DockPanelSplitter"
+        Title="MainWindow" 
         Height="450" 
         Width="800"
         MinHeight="300"
@@ -26,7 +27,7 @@
                     Command="{Binding GoToPreviousCommand}"/>
         <KeyBinding Key="Delete"
                     Command="{Binding DeleteFileCommand}" 
-                    CommandParameter="{Binding CurrentFile}"/>
+                    CommandParameter="{Binding State.CurrentFile}"/>
         <KeyBinding Key="Right"
                     Command="{Binding GoToNextCommand}"/>
     </Window.InputBindings>
@@ -70,7 +71,7 @@
 
             <GroupBox Margin="{adonisUi:Space Offset=3}" DockPanel.Dock="Right">
                 <TextBlock VerticalAlignment="Center">
-                        <Run>Files left: </Run> <Run><Binding Path="Files.Count" Mode="OneWay"/></Run>
+                        <Run>Files left: </Run> <Run><Binding Path="State.Files.Count" Mode="OneWay"/></Run>
                 </TextBlock>
             </GroupBox>
 
@@ -85,7 +86,7 @@
                        VerticalAlignment="Center" VerticalContentAlignment="Center"
                        Padding="{adonisUi:Space HorizontalOffset=1}"
                        />
-                    <TextBox AcceptsTab="False" Text="{Binding SearchText, Mode=TwoWay, Delay=100, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox AcceptsTab="False" Text="{Binding State.SearchText, Mode=TwoWay, Delay=100, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource TextBoxDefaultStyle}"
                          >
                         <TextBox.InputBindings>
@@ -107,8 +108,8 @@
                             <KeyBinding Key="Right" Modifiers="Shift" Command="{Binding GoToNextCommand}"/>
                             <KeyBinding Key="Left" Modifiers="Shift" Command="{Binding GoToPreviousCommand}"/>
                             <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding GoToNextCommand}"/>
-                            <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding DeleteFileCommand}" CommandParameter="{Binding CurrentFile}"/>
-                            <KeyBinding Key="D" Modifiers="Ctrl" Command="{Binding DeleteFileCommand}" CommandParameter="{Binding CurrentFile}"/>
+                            <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding DeleteFileCommand}" CommandParameter="{Binding State.CurrentFile}"/>
+                            <KeyBinding Key="D" Modifiers="Ctrl" Command="{Binding DeleteFileCommand}" CommandParameter="{Binding State.CurrentFile}"/>
                         </TextBox.InputBindings>
                     </TextBox>
                 </DockPanel>
@@ -149,7 +150,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <ListBox x:Name="folders" ItemsSource="{Binding FilteredTargets}" SelectedItem="{Binding CurrentTargetFolder}" Margin="3">
+                <ListBox x:Name="folders" ItemsSource="{Binding State.FilteredTargets}" SelectedItem="{Binding State.CurrentTargetFolder}" Margin="3">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Width="{Binding Width, ElementName=TargetFoldersPanel, Delay=200}"/>
@@ -167,17 +168,6 @@
 
         <controls:DockPanelSplitter DockPanel.Dock="Left"/>
 
-        <GroupBox DockPanel.Dock="Right">
-            
-        <common:LogView 
-            HorizontalAlignment="Stretch"
-            Margin="0"
-            LogsSource="{Binding Logs}" 
-            DockPanel.Dock="Right"/>
-        </GroupBox>
-
-        <controls:DockPanelSplitter DockPanel.Dock="Right"/>
-
         <ToolBar x:Name="Toolbar" Visibility="Collapsed" DockPanel.Dock="Bottom" IsOverflowOpen="False">
             <Button 
                 Padding="10"
@@ -191,27 +181,26 @@
                 Padding="10"
                 Content="Delete"
                 Command="{Binding DeleteFileCommand}" 
-                CommandParameter="{Binding CurrentFile}"/>
+                CommandParameter="{Binding State.CurrentFile}"/>
             <Button 
                 Padding="10"
                 Content="Show In File Explorer"
                 Command="{Binding OpenInExplorerCommand}"
-                CommandParameter="{Binding CurrentFile}"/>
+                CommandParameter="{Binding State.CurrentFile}"/>
         </ToolBar>
 
         <WrapPanel x:Name="ImageArea" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical">
-            <Label FontSize="80" Content="{Binding CurrentTargetFolder.Name}" HorizontalAlignment="Center"/>
-            <Label Content="{Binding CurrentFile.Name}" HorizontalAlignment="Center" DockPanel.Dock="Bottom"/>
+            <Label FontSize="80" Content="{Binding State.CurrentTargetFolder.Name}" HorizontalAlignment="Center"/>
+            <Label Content="{Binding State.CurrentFile.Name}" HorizontalAlignment="Center" DockPanel.Dock="Bottom"/>
             <Border MinHeight="20" MinWidth="20" Background="DarkBlue">
                 
                 <Image MaxHeight="700" Focusable="True" IsHitTestVisible="True"
-                       
-                           Source="{Binding CurrentFile, Converter={StaticResource fileInfoToImage}}">
+                           Source="{Binding State.CurrentFile, Converter={StaticResource fileInfoToImage}}">
                     <Image.ToolTip>
                         <StackPanel>
-                            <TextBlock Text="{Binding CurrentFile.Name}"/>
-                            <TextBlock Text="{Binding CurrentFile.LastWriteTime}"/>
-                            <TextBlock Text="{Binding CurrentFile.Length, Converter={StaticResource byteCountFormatter}}"/>
+                            <TextBlock Text="{Binding State.CurrentFile.Name}"/>
+                            <TextBlock Text="{Binding State.CurrentFile.LastWriteTime}"/>
+                            <TextBlock Text="{Binding State.CurrentFile.Length, Converter={StaticResource byteCountFormatter}}"/>
                         </StackPanel>
                     </Image.ToolTip>
                 </Image>

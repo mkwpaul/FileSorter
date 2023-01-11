@@ -1,9 +1,4 @@
 ﻿using AdonisUI.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WPF.Common;
 
@@ -23,7 +18,9 @@ public interface IUserInteraction
 
     MessageBoxResult Show(IMessageBoxModel model);
 
-    T Show<T>(IMessageBoxModel<T> model) where T : unmanaged, Enum;
+    T ShowEnum<T>(IMessageBoxModel<T> model) where T : unmanaged, Enum;
+
+    T Show<T>(IMessageBoxModel<T> model);
 
     bool Show(IMessageBoxModel<BooleanResult> model);
 }

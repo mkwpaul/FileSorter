@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows.Data;
 
 namespace WPF.Common.Converters;

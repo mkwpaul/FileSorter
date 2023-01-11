@@ -1,10 +1,5 @@
 ﻿using AdonisUI.Controls;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WPF.Common;
 
@@ -36,7 +31,7 @@ public class UserInteraction : IUserInteraction
         return MessageBox.Show(model);
     }
 
-    public T Show<T>(IMessageBoxModel<T> model) where T : unmanaged, Enum
+    public T ShowEnum<T>(IMessageBoxModel<T> model) where T : unmanaged, Enum
     {
         var result = MessageBox.Show(model);
         if (result != MessageBoxResult.Custom)
@@ -46,6 +41,17 @@ public class UserInteraction : IUserInteraction
 
         int val = (int)result2;
         return val.ToEnum<T>();
+    }
+
+    public T Show<T>(IMessageBoxModel<T> model) //where T : unmanaged, Enum
+    {
+        var result = MessageBox.Show(model);
+        if (result != MessageBoxResult.Custom)
+            throw new InvalidOperationException();
+
+        var result2 = model.ButtonPressed?.Id ?? model.Buttons.FirstOrDefault(x => x.IsDefault);
+
+        return (T)result2;
     }
 
     public bool Show(IMessageBoxModel<BooleanResult> model)
@@ -73,9 +79,14 @@ public static class MessageBoxExtensions
         return service.Show(model);
     }
 
-    public static T Show<T>(this IMessageBoxModel<T> model, IUserInteraction service) where T : unmanaged, Enum
+    public static T ShowEnum<T>(this IMessageBoxModel<T> model, IUserInteraction service) where T : unmanaged, Enum
     {
-        return model.Show(service);
+        return service.ShowEnum(model);
+    }
+
+    public static T Show<T>(this IMessageBoxModel<T> model, IUserInteraction service)
+    {
+        return service.Show(model);
     }
 }
 
