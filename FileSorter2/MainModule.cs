@@ -3,12 +3,9 @@ using Serilog;
 using System.Diagnostics;
 using System.IO;
 using System.Security;
-using System.Windows;
 using WPF.Common;
 
 namespace FileSorter;
-
-
 
 public class MainModule
 {
@@ -67,7 +64,6 @@ public class MainModule
             {
                 if (!Directory.Exists(source.Folder))
                     return;
-
 
                 var folders = (source.FolderType) switch
                 {
@@ -209,6 +205,7 @@ public class MainModule
         var newFullPath = Path.Combine(currentTarget.FullName, mv.State.CurrentFile.Name);
         var file = mv.State.CurrentFile;
 
+        _log.Information("Moving file {file} to {targetFolder}", file.Name, newFullPath);
         bool cancel = CheckForFileConflict(mv, newFullPath, file);
         if (cancel)
             return;
@@ -227,6 +224,8 @@ public class MainModule
                 _log.Error(ex, "MoveToTargetFolder Failed.");
             }
         });
+
+        _log.Verbose("Exited MoveToTargetFolder");
     }
 
     bool CheckForFileConflict(MainViewModel mv, string newFullPath, FileInfo file)
@@ -260,16 +259,19 @@ public class MainModule
             return;
 
         GoToNextFile(mv);
-        try
+        Task.Run(() =>
         {
-            FileSystem.DeleteFile(file.FullName, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
-            RemoveFile(mv, file);
-            _log.Information("Deleted {file}", file.Name);
-        }
-        catch (Exception ex)
-        {
-            _log.Error(ex, "Delete File Failed");
-        }
+            try
+            {
+                File.Delete(file.FullName);
+                RemoveFile(mv, file);
+                _log.Information("Deleted {file}", file.Name);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Delete File Failed");
+            }
+        });
     }
 
     public void OpenInExplorer(FileInfo file)

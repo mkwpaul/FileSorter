@@ -193,7 +193,6 @@
             <Label FontSize="80" Content="{Binding State.CurrentTargetFolder.Name}" HorizontalAlignment="Center"/>
             <Label Content="{Binding State.CurrentFile.Name}" HorizontalAlignment="Center" DockPanel.Dock="Bottom"/>
             <Border MinHeight="20" MinWidth="20" Background="DarkBlue">
-                
                 <Image MaxHeight="700" Focusable="True" IsHitTestVisible="True"
                            Source="{Binding State.CurrentFile, Converter={StaticResource fileInfoToImage}}">
                     <Image.ToolTip>

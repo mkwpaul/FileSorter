@@ -1,10 +1,13 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿global using System.Linq;
+global using System;
+global using System.Collections.Generic;
+global using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Serilog.Events;
 using Serilog;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WPF.Common;
-using AdonisUI;
 using FileSorter.Services;
 
 namespace FileSorter;
@@ -21,6 +24,8 @@ public class Program
             .WriteTo.Seq("http://localhost:5341", LogEventLevel.Verbose)
             .CreateLogger();
 
+        Log.Logger = logger;
+
         SettingsReader._log = logger.ForContext<SettingsReader>();
 
         var settings = SettingsReader.GetSettingsFromFile() ?? new Settings();
@@ -32,8 +37,6 @@ public class Program
             var env = host.HostingEnvironment;
             config.AddJsonFile("settings.json", optional: true, reloadOnChange: true);
         });
-
-
 
         builder.ConfigureLogging(logbuilder => logbuilder.AddSerilog(logger));
 
@@ -55,10 +58,10 @@ public class Program
         var app = new App();
 
         // setup adonis-ui
-        ResourceLocator.SetColorScheme(app.Resources, ResourceLocator.DarkColorScheme);
+        AdonisUI.ResourceLocator.SetColorScheme(app.Resources, AdonisUI.ResourceLocator.DarkColorScheme);
 
         // resources 
-        app.Resources.Add("fileInfoToImage", host.Services.GetService<Services.FileInfoToImageSourceConverter>());
+        app.Resources.Add("fileInfoToImage", host.Services.GetService<FileInfoToImageSourceConverter>());
 
         app.MainWindow = host.Services.GetService<MainWindow>()!;
         app.MainWindow.ShowDialog();

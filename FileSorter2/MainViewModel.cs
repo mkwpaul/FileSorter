@@ -6,6 +6,10 @@ using System.Windows.Data;
 using System.Collections.Specialized;
 using Serilog;
 using WPF.Common.Commands;
+using AdonisUI;
+using System.Collections;
+using System.Runtime;
+using System.Windows.Navigation;
 
 namespace FileSorter;
 
@@ -132,6 +136,10 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
 
         collectionView.Source = state.TargetFolders;
         collectionView.View.Filter = Filter;
+
+        if (collectionView.View is ListCollectionView view)
+            view.CustomSort = new CustomDicComparer(this);
+
         state.FilteredTargets = collectionView.View;
         state.TargetFolders.CollectionChanged += OnTargetFoldersContentChanged;
         state.PropertyChanged += OnPropertyChanged;
@@ -213,6 +221,34 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
         if (string.IsNullOrWhiteSpace(State.SearchText))
             return true;
 
-        return dicInfo.Name.Contains(State.SearchText, StringComparison.CurrentCultureIgnoreCase);
+        if (dicInfo.Name.Contains(State.SearchText, StringComparison.CurrentCultureIgnoreCase))
+            return true;
+
+        var ratio = FuzzySharp.Fuzz.Ratio(dicInfo.Name, State.SearchText);
+        return ratio > 80;
+    }
+
+    public class CustomDicComparer : IComparer
+    {
+        readonly MainViewModel mv;
+        public CustomDicComparer(MainViewModel mv) { this.mv = mv; }
+
+        public int Compare(object? x, object? y)
+        {
+            if (x is not DirectoryInfo infoX)
+                return -1;
+            if (y is not DirectoryInfo infoY)
+                return 1;
+
+            if (string.IsNullOrEmpty(mv.State.SearchText))
+                return StringComparer.OrdinalIgnoreCase.Compare(infoX.Name, infoY.Name);
+
+            var ratioX = FuzzySharp.Fuzz.Ratio(infoX.Name, mv.State.SearchText);
+            var ratioY = FuzzySharp.Fuzz.Ratio(infoY.Name, mv.State.SearchText);
+
+            // better matches (higher ratios) should be listed earlier
+            // so compare Y to X instead of X to Y to reverse order.
+            return ratioY.CompareTo(ratioX);
+        }
     }
 }
