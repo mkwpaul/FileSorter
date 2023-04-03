@@ -65,7 +65,7 @@ public class MainModule
                 if (!Directory.Exists(source.Folder))
                     return;
 
-                var folders = (source.FolderType) switch
+                var folders = source.FolderType switch
                 {
                     FolderSourceType.IndividualFolder => new string[] { source.Folder },
                     FolderSourceType.SubFolders => Directory.GetDirectories(source.Folder),
@@ -228,6 +228,7 @@ public class MainModule
         _log.Verbose("Exited MoveToTargetFolder");
     }
 
+    /// <returns>returns if existing file should be preserved</returns>
     bool CheckForFileConflict(MainViewModel mv, string newFullPath, FileInfo file)
     {
         if (!File.Exists(newFullPath))
@@ -284,15 +285,6 @@ public class MainModule
 
         string argument = $"/select, \"{file.FullName}\"";
         Process.Start("explorer.exe", argument);
-    }
-
-    public static void GoToPreviousFile(IList<FileInfo> files, int currentIndex, Action<int> setIndex)
-    {
-        if (files is null || files.Count == 0)
-            return;
-
-        int newIndex = (currentIndex == 0) ? files.Count - 1 : currentIndex - 1;
-        setIndex(newIndex);
     }
 
     public void GoToPreviousFile(MainViewModel mv)

@@ -39,7 +39,7 @@ public class UserInteraction : IUserInteraction
 
         var result2 = model.ButtonPressed?.Id ?? model.Buttons.FirstOrDefault(x => x.IsDefault);
 
-        int val = (int)result2;
+        int val = (int)result2!;
         return val.ToEnum<T>();
     }
 
@@ -51,7 +51,7 @@ public class UserInteraction : IUserInteraction
 
         var result2 = model.ButtonPressed?.Id ?? model.Buttons.FirstOrDefault(x => x.IsDefault);
 
-        return (T)result2;
+        return (T)result2!;
     }
 
     public bool Show(IMessageBoxModel<BooleanResult> model)

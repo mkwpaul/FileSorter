@@ -6,10 +6,7 @@ using System.Windows.Data;
 using System.Collections.Specialized;
 using Serilog;
 using WPF.Common.Commands;
-using AdonisUI;
-using System.Collections;
-using System.Runtime;
-using System.Windows.Navigation;
+using FuzzySharp;
 
 namespace FileSorter;
 
@@ -22,7 +19,7 @@ public class TargetFolderSource : PropertyChangedNotifier
     public string Folder
     {
         get => folder;
-        set => SetProperty(ref folder, value);
+        set => SetProperty(ref folder!, value ?? "");
     }
 
     public FolderSourceType FolderType
@@ -38,9 +35,9 @@ public class Settings : PropertyChangedNotifier
     string _targetFoldersFolder = "";
     bool _askBeforeFileDeletion = true;
 
-    public string SourceFolder { get => _sourceFolder; set => SetProperty(ref _sourceFolder, value); }
+    public string SourceFolder { get => _sourceFolder; set => SetProperty(ref _sourceFolder!, value ?? ""); }
 
-    public string TargetFoldersFolder { get => _targetFoldersFolder; set => SetProperty(ref _targetFoldersFolder, value); }
+    public string TargetFoldersFolder { get => _targetFoldersFolder; set => SetProperty(ref _targetFoldersFolder!, value ?? ""); }
 
     public bool AskBeforeFileDeletion { get => _askBeforeFileDeletion; set => SetProperty(ref _askBeforeFileDeletion, value); }
 
@@ -90,7 +87,7 @@ public class State : PropertyChangedNotifier
     public string SearchText
     {
         get => _searchText;
-        set => SetProperty(ref _searchText, value);
+        set => SetProperty(ref _searchText!, value ?? "");
     }
 }
 
@@ -105,11 +102,11 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
     readonly CollectionViewSource collectionView;
     readonly MainModule _main;
     readonly ILogger log;
+    readonly Dictionary<DirectoryInfo, int> _history = new();
 
     public MainViewModel(MainModule main, Settings settings, ILogger logger)
     {
         _main = main;
-        //Logs = sink;
         log = logger.ForContext<MainViewModel>();
         Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         settings.PropertyChanged += SaveToDiskOnChanged;
@@ -122,8 +119,33 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
             IsLiveFilteringRequested = true,
             IsLiveSortingRequested = true
         };
-        var state = new State();
-        State = state;
+
+        State = new State();
+        InitializeState(main, settings, State);
+
+        main.ReadSourceFolder(this);
+        main.CreateNewFolderFromSearch(this);
+
+        GoToNextCommand = new RelayCommand(() => main.GoToNextFile(this));
+        GoToPreviousCommand = new RelayCommand(() => main.GoToPreviousFile(this));
+        DeleteFileCommand = new RelayCommand<FileInfo>(x => main.DeleteFile(this, x));
+        OpenInExplorerCommand = new RelayCommand<FileInfo>(main.OpenInExplorer);
+        MoveToTargetFolderCommand = new RelayCommand(() =>
+        {
+            if (State.CurrentTargetFolder is not null)
+                _history[State.CurrentTargetFolder] = Environment.TickCount;
+            main.MoveToTargetFolder(this);
+        });
+        SelectFirstFolderCommand = new RelayCommand(() => main.SelectFirstFolder(this));
+        OnEnterCommand = new RelayCommand(() => main.OnEnter(this));
+        CreateNewFolderFromSearchCommand = new RelayCommand(() => main.CreateNewFolderFromSearch(this));
+
+        AddFolderSource = new RelayCommand(() => main.AddNewSource(this));
+        RemoveFolderSource = new RelayCommand<TargetFolderSource>(x => main.RemoveSource(this, x));
+    }
+
+    private State InitializeState(MainModule main, Settings settings, State state)
+    {
         main.UpdateTargetFoldersFromTargetSources(settings, state);
 
         foreach (var folderSource in settings.TargetSources)
@@ -138,38 +160,19 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
         collectionView.View.Filter = Filter;
 
         if (collectionView.View is ListCollectionView view)
-            view.CustomSort = new CustomDicComparer(this);
+            view.CustomSort = Comparer<DirectoryInfo>.Create(Sort);
 
         state.FilteredTargets = collectionView.View;
         state.TargetFolders.CollectionChanged += OnTargetFoldersContentChanged;
         state.PropertyChanged += OnPropertyChanged;
-
-        main.ReadSourceFolder(this);
-        main.CreateNewFolderFromSearch(this);
-
-        GoToNextCommand = new RelayCommand(() => main.GoToNextFile(this));
-        GoToPreviousCommand = new RelayCommand(() => main.GoToPreviousFile(this));
-        DeleteFileCommand = new RelayCommand<FileInfo>(x => main.DeleteFile(this, x));
-        OpenInExplorerCommand = new RelayCommand<FileInfo>(main.OpenInExplorer);
-        MoveToTargetFolderCommand = new RelayCommand(() => main.MoveToTargetFolder(this));
-        SelectFirstFolderCommand = new RelayCommand(() => main.SelectFirstFolder(this));
-        OnEnterCommand = new RelayCommand(() => main.OnEnter(this));
-        CreateNewFolderFromSearchCommand = new RelayCommand(() => main.CreateNewFolderFromSearch(this));
-
-        AddFolderSource = new RelayCommand(() => main.AddNewSource(this));
-        RemoveFolderSource = new RelayCommand<TargetFolderSource>(x => main.RemoveSource(this, x));
+        return state;
     }
 
-    public Command AddFolderSource { get; }
-    public Command RemoveFolderSource { get; }
-    public Command GoToNextCommand { get; }
-    public Command GoToPreviousCommand { get; }
-    public Command DeleteFileCommand { get; }
-    public Command OpenInExplorerCommand { get; }
-    public Command MoveToTargetFolderCommand { get; }
-    public Command SelectFirstFolderCommand { get; }
-    public Command CreateNewFolderFromSearchCommand { get; }
-    public Command OnEnterCommand { get; }
+    public Command AddFolderSource { get; } public Command RemoveFolderSource { get; }
+    public Command GoToNextCommand { get; } public Command GoToPreviousCommand { get; }
+    public Command DeleteFileCommand { get; } public Command OpenInExplorerCommand { get; }
+    public Command MoveToTargetFolderCommand { get; } public Command SelectFirstFolderCommand { get; }
+    public Command CreateNewFolderFromSearchCommand { get; } public Command OnEnterCommand { get; }
 
     public Settings Settings { get; }
 
@@ -190,7 +193,7 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
                 break;
 
             case nameof(State.SearchText):
-                collectionView.View?.Refresh();
+                RefreshFolderView();
                 _main.SelectFirstFolder(this);
                 break;
             case nameof(State.CurrentFileIndex):
@@ -201,6 +204,11 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
 
     void OnTargetFoldersContentChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        RefreshFolderView();
+    }
+
+    public void RefreshFolderView()
+    {
         collectionView.View?.Refresh();
     }
 
@@ -209,8 +217,7 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
         if (sender is not Settings settings)
             return;
 
-        var task = SettingsReader.SafeToDisk(settings);
-        log.Information("Saving Settings to Disk, {task}", task);
+        Task.Run(async () => await SettingsReader.SafeToDisk(settings));
     }
 
     bool Filter(object o)
@@ -224,31 +231,40 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
         if (dicInfo.Name.Contains(State.SearchText, StringComparison.CurrentCultureIgnoreCase))
             return true;
 
-        var ratio = FuzzySharp.Fuzz.Ratio(dicInfo.Name, State.SearchText);
-        return ratio > 80;
+        var ratio = Fuzz.Ratio(dicInfo.Name, State.SearchText);
+        return ratio > 70;
     }
 
-    public class CustomDicComparer : IComparer
+    int Sort(DirectoryInfo x, DirectoryInfo y)
     {
-        readonly MainViewModel mv;
-        public CustomDicComparer(MainViewModel mv) { this.mv = mv; }
-
-        public int Compare(object? x, object? y)
+        int comp;
+        if (!string.IsNullOrEmpty(State.SearchText))
         {
-            if (x is not DirectoryInfo infoX)
-                return -1;
-            if (y is not DirectoryInfo infoY)
-                return 1;
-
-            if (string.IsNullOrEmpty(mv.State.SearchText))
-                return StringComparer.OrdinalIgnoreCase.Compare(infoX.Name, infoY.Name);
-
-            var ratioX = FuzzySharp.Fuzz.Ratio(infoX.Name, mv.State.SearchText);
-            var ratioY = FuzzySharp.Fuzz.Ratio(infoY.Name, mv.State.SearchText);
+            var ratioX = Fuzz.Ratio(x.Name, State.SearchText);
+            var ratioY = Fuzz.Ratio(y.Name, State.SearchText);
 
             // better matches (higher ratios) should be listed earlier
-            // so compare Y to X instead of X to Y to reverse order.
-            return ratioY.CompareTo(ratioX);
+            // so compare Y to X instead of X to Y to sort by ratio in descending order.
+            comp = ratioY.CompareTo(ratioX);
+            if (comp != 0)
+                return comp;
         }
+        else
+        {
+            comp = StringComparer.OrdinalIgnoreCase.Compare(x.Name, y.Name);
+            if (comp != 0)
+                return comp;
+        }
+
+        var xTick = GetLastAccessTickSafe(x);
+        var yTick = GetLastAccessTickSafe(y);
+        return xTick.CompareTo(yTick);
+    }
+
+    int GetLastAccessTickSafe(DirectoryInfo info)
+    {
+        if (_history.TryGetValue(info, out var time))
+            return time;
+        return 0;
     }
 }

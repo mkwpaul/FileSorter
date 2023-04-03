@@ -61,7 +61,7 @@ public class FileInfoToImageSourceConverter : IValueConverter
         }
     }
 
-    unsafe BitmapImage ReadImage(string filePath)
+    BitmapImage ReadImage(string filePath)
     {
         _log?.Verbose("reading Image from known Image type");
 
@@ -72,18 +72,13 @@ public class FileInfoToImageSourceConverter : IValueConverter
         //   (the build in caching is too long)
     
         using var fileStream = File.OpenRead(filePath);
-        // var memoryStream = new MemoryStream();
-        // 
-        // fileStream.CopyTo(memoryStream);
-        // 
-        // fileStream.Seek(0, SeekOrigin.Begin);
 
         var bitmap = new BitmapImage();
         bitmap.BeginInit();
         bitmap.CacheOption = BitmapCacheOption.OnLoad;
         bitmap.StreamSource = fileStream;
         bitmap.EndInit();
-        //_cache.Add(filePath, bitmap);
+        _cache.Add(filePath, bitmap);
 
         return bitmap;
     }

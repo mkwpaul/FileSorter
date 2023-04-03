@@ -24,6 +24,9 @@ csharp_style_expression_bodied_accessors = true:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 
+# CS8524: The switch expression does not handle some values of its input type (it is not exhaustive) involving an unnamed enum value.
+dotnet_diagnostic.CS8524.severity = none
+
 [*.{cs,vb}]
 dotnet_style_qualification_for_field=false:suggestion
 dotnet_style_explicit_tuple_names=true:error

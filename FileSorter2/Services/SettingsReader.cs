@@ -6,14 +6,10 @@ namespace FileSorter;
 
 public class SettingsReader
 {
-    internal static ILogger _log = null!;
+    static readonly ILogger _log  = Log.Logger.ForContext<SettingsReader>();
     public static string GetSettingsFilePath() => Path.Combine(Directory.GetCurrentDirectory(), "settings.json");
 
-    public static readonly JsonSerializerOptions options = new()
-    {
-        WriteIndented = true,
-        AllowTrailingCommas = true,
-    };
+    public static readonly JsonSerializerOptions options = new() { WriteIndented = true, AllowTrailingCommas = true, };
 
     public static Settings? GetSettingsFromFile()
     {
@@ -48,6 +44,8 @@ public class SettingsReader
         try
         {
             await File.WriteAllTextAsync(path, json);
+            _log.Information("Successfully wrote setings to Disk!");
+
         }
         catch (IOException ex)
         {

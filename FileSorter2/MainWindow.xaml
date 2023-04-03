@@ -10,7 +10,7 @@
         xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
         xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=DockPanelSplitter"
-        Title="MainWindow" 
+        Title="FileSorter"
         Height="450" 
         Width="800"
         MinHeight="300"
@@ -18,9 +18,11 @@
         x:Name="win"
         d:DataContext="{d:DesignData Type=local:MainViewModel, IsDesignTimeCreatable=True}">
 
+    <!--
     <Window.Style>
         <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}"/>
     </Window.Style>
+    -->
 
     <Window.InputBindings>
         <KeyBinding Key="Left" 
@@ -67,7 +69,6 @@
                 Content="Right"
                 Command="{Binding GoToNextCommand}"
                 />
-
 
             <GroupBox Margin="{adonisUi:Space Offset=3}" DockPanel.Dock="Right">
                 <TextBlock VerticalAlignment="Center">
@@ -150,16 +151,19 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <ListBox x:Name="folders" ItemsSource="{Binding State.FilteredTargets}" SelectedItem="{Binding State.CurrentTargetFolder}" Margin="3">
+                
+                <ListBox x:Name="folders" ItemsSource="{Binding State.FilteredTargets}" SelectedItem="{Binding State.CurrentTargetFolder}" Margin="3"
+                         >
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Width="{Binding Width, ElementName=TargetFoldersPanel, Delay=200}"/>
+                            
+                            <WrapPanel Width="{Binding Width, ElementName=TargetFoldersPanel, Delay=200}" IsItemsHost="True" />
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
 
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Name}"/>
+                            <TextBlock Text="{Binding Name}" Margin="-2"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -168,7 +172,7 @@
 
         <controls:DockPanelSplitter DockPanel.Dock="Left"/>
 
-        <ToolBar x:Name="Toolbar" Visibility="Collapsed" DockPanel.Dock="Bottom" IsOverflowOpen="False">
+        <ToolBar x:Name="Toolbar" Visibility="Visible" DockPanel.Dock="Bottom" IsOverflowOpen="False">
             <Button 
                 Padding="10"
                 Content="Left"
@@ -192,18 +196,16 @@
         <WrapPanel x:Name="ImageArea" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Vertical">
             <Label FontSize="80" Content="{Binding State.CurrentTargetFolder.Name}" HorizontalAlignment="Center"/>
             <Label Content="{Binding State.CurrentFile.Name}" HorizontalAlignment="Center" DockPanel.Dock="Bottom"/>
-            <Border MinHeight="20" MinWidth="20" Background="DarkBlue">
-                <Image MaxHeight="700" Focusable="True" IsHitTestVisible="True"
-                           Source="{Binding State.CurrentFile, Converter={StaticResource fileInfoToImage}}">
-                    <Image.ToolTip>
-                        <StackPanel>
-                            <TextBlock Text="{Binding State.CurrentFile.Name}"/>
-                            <TextBlock Text="{Binding State.CurrentFile.LastWriteTime}"/>
-                            <TextBlock Text="{Binding State.CurrentFile.Length, Converter={StaticResource byteCountFormatter}}"/>
-                        </StackPanel>
-                    </Image.ToolTip>
-                </Image>
-            </Border>
+            <Image MaxHeight="700" Focusable="True" IsHitTestVisible="True"
+                   Source="{Binding State.CurrentFile, Converter={StaticResource fileInfoToImage}}">
+                <Image.ToolTip>
+                    <StackPanel>
+                        <TextBlock Text="{Binding State.CurrentFile.Name}"/>
+                        <TextBlock Text="{Binding State.CurrentFile.LastWriteTime}"/>
+                        <TextBlock Text="{Binding State.CurrentFile.Length, Converter={StaticResource byteCountFormatter}}"/>
+                    </StackPanel>
+                </Image.ToolTip>
+            </Image>
 
         </WrapPanel>
 

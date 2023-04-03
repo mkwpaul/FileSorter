@@ -22,7 +22,7 @@ public static class MessageBuilder
 
     public static MessageBoxModel<TEnum> AddAnswer<TEnum>(this MessageBoxModel<TEnum> model, TEnum answer, string? caption = null) //where TEnum : Enum
     {
-        caption ??= answer.ToString();
+        caption ??= answer?.ToString() ?? "";
 
         var buttons = (List<IMessageBoxButtonModel>)model.Buttons;
         var button = MessageBoxButtons.Custom(caption, answer);
