@@ -99,15 +99,13 @@ public interface IWorld
 
 public class MainViewModel : PropertyChangedNotifier, IWorld
 {
-    readonly CollectionViewSource collectionView;
-    readonly MainModule _main;
-    readonly ILogger log;
-    readonly Dictionary<DirectoryInfo, int> _history = new();
+    public readonly CollectionViewSource collectionView;
+    public readonly MainModule _main;
+    public readonly Dictionary<DirectoryInfo, int> _history = new();
 
-    public MainViewModel(MainModule main, Settings settings, ILogger logger)
+    public MainViewModel(MainModule main, Settings settings)
     {
         _main = main;
-        log = logger.ForContext<MainViewModel>();
         Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         settings.PropertyChanged += SaveToDiskOnChanged;
         settings.PropertyChanged += FowardNotification;
@@ -237,6 +235,11 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
 
     int Sort(DirectoryInfo x, DirectoryInfo y)
     {
+        return Sort(x, y, State, _history);
+    }
+
+    static int Sort(DirectoryInfo x, DirectoryInfo y, State State, Dictionary<DirectoryInfo, int> _history)
+    {
         int comp;
         if (!string.IsNullOrEmpty(State.SearchText))
         {
@@ -256,12 +259,12 @@ public class MainViewModel : PropertyChangedNotifier, IWorld
                 return comp;
         }
 
-        var xTick = GetLastAccessTickSafe(x);
-        var yTick = GetLastAccessTickSafe(y);
+        var xTick = GetLastAccessTickSafe(x, _history);
+        var yTick = GetLastAccessTickSafe(y, _history);
         return xTick.CompareTo(yTick);
     }
 
-    int GetLastAccessTickSafe(DirectoryInfo info)
+    static int GetLastAccessTickSafe(DirectoryInfo info, Dictionary<DirectoryInfo, int> _history)
     {
         if (_history.TryGetValue(info, out var time))
             return time;

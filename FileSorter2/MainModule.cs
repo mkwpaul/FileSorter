@@ -47,43 +47,44 @@ public class MainModule
         foreach (var entry in newValues)
             state.TargetFolders.Add(entry);
 
-        List<DirectoryInfo> GetDirectories(IEnumerable<TargetFolderSource> sources)
-        {
-            // hashset to keep track of entries and check for duplicates.
-            var hashset = new HashSet<string>();
-            var result = new List<DirectoryInfo>();
-            foreach (var source in sources)
-                ReadTargetFolderSource(result, hashset, source);
+    }
 
-            return result;
+    List<DirectoryInfo> GetDirectories(IEnumerable<TargetFolderSource> sources)
+    {
+        // hashset to keep track of entries and check for duplicates.
+        var hashset = new HashSet<string>();
+        var result = new List<DirectoryInfo>();
+        foreach (var source in sources)
+            ReadTargetFolderSource(result, hashset, source, _log);
+
+        return result;
+    }
+
+    static void ReadTargetFolderSource(List<DirectoryInfo> result, HashSet<string> hashset, TargetFolderSource source, ILogger _log)
+    {
+        try
+        {
+            if (!Directory.Exists(source.Folder))
+                return;
+
+            var folders = source.FolderType switch
+            {
+                FolderSourceType.IndividualFolder => new string[] { source.Folder },
+                FolderSourceType.SubFolders => Directory.GetDirectories(source.Folder),
+                FolderSourceType.SubFoldersRecursive => Directory.GetDirectories(source.Folder, "", System.IO.SearchOption.AllDirectories),
+            };
+
+            folders
+                .Where(hashset.Add)
+                .Select(x => new DirectoryInfo(x))
+                .ForEach(result.Add);
         }
-
-        void ReadTargetFolderSource(List<DirectoryInfo> result, HashSet<string> hashset, TargetFolderSource source)
+        catch (Exception ex)
         {
-            try
-            {
-                if (!Directory.Exists(source.Folder))
-                    return;
-
-                var folders = source.FolderType switch
-                {
-                    FolderSourceType.IndividualFolder => new string[] { source.Folder },
-                    FolderSourceType.SubFolders => Directory.GetDirectories(source.Folder),
-                    FolderSourceType.SubFoldersRecursive => Directory.GetDirectories(source.Folder, "", System.IO.SearchOption.AllDirectories),
-                };
-
-                folders
-                    .Where(hashset.Add)
-                    .Select(x => new DirectoryInfo(x))
-                    .ForEach(result.Add);
-            }
-            catch (Exception ex)
-            {
-                if (ex is SecurityException or IOException)
-                    _log.Error(ex, "Error occured reading folder {targetSource}", source.Folder);
-                else
-                    throw;
-            }
+            if (ex is SecurityException or IOException)
+                _log.Error(ex, "Error occured reading folder {targetSource}", source.Folder);
+            else
+                throw;
         }
     }
 

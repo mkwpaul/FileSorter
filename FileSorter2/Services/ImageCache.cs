@@ -7,27 +7,26 @@ using System.Windows.Media.Imaging;
 
 namespace FileSorter.Services;
 
-public class ImageCache
+public sealed class ImageCache
 {
     readonly ILogger _logger;
     readonly MemoryCache _cache;
-    readonly CacheEntryRemovedCallback _delegate;
+
+    readonly CacheItemPolicy policy;
 
     public ImageCache(ILogger logger)
     {
+        policy = new CacheItemPolicy
+        {
+            SlidingExpiration = TimeSpan.FromSeconds(15),
+            RemovedCallback = OnRemoveFromCache,
+        };
         _logger = logger.ForContext<ImageCache>();
         _cache = new MemoryCache("imageCache");
-        _delegate = OnRemoveFromCache;
     }
 
     public void Add(string key, ImageSource image)
     {
-        var policy = new CacheItemPolicy
-        {
-            SlidingExpiration = TimeSpan.FromSeconds(15),
-            RemovedCallback = _delegate,
-        };
-
         _cache.AddOrGetExisting(key, image, policy);
     }
 

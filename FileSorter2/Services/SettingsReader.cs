@@ -1,4 +1,5 @@
 ﻿using Serilog;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 
@@ -10,6 +11,17 @@ public class SettingsReader
     public static string GetSettingsFilePath() => Path.Combine(Directory.GetCurrentDirectory(), "settings.json");
 
     public static readonly JsonSerializerOptions options = new() { WriteIndented = true, AllowTrailingCommas = true, };
+
+
+    public void PrintFormattable(IFormattable formattable)
+    {
+        formattable.ToString("Format", CultureInfo.CurrentCulture);
+    }
+
+    public void PrintFormattable<T>(T formattable) where T : IFormattable
+    {
+        formattable.ToString("Format", CultureInfo.CurrentCulture);
+    }
 
     public static Settings? GetSettingsFromFile()
     {

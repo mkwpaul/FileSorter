@@ -14,7 +14,6 @@ var logger = SetupLogger();
 var settings = SettingsReader.GetSettingsFromFile() ?? new Settings();
 var host = SetupHost(args);
 StartWpfApp(host);
-
 Logger SetupLogger()
 {
     var logger = new LoggerConfiguration()

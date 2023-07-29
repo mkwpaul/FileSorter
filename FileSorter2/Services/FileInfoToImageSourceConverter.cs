@@ -46,7 +46,24 @@ public class FileInfoToImageSourceConverter : IValueConverter
                 case ".jpeg":
                 case ".bmp":
                 case ".gif":
-                    return ReadImage(filePath);
+                    _log?.Verbose("reading Image from known Image type");
+
+                    // the following requirements must be met:
+
+                    // - the file must not be blocked for the sake of moving and deleting
+                    // - the file must not be cached for too, otherwise we quickly run out of memory.
+                    //   (the build in caching is too long)
+                    using (var fileStream = File.OpenRead(filePath))
+                    {
+                        var bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.CacheOption = BitmapCacheOption.None;
+                        bitmap.StreamSource = fileStream;
+                        bitmap.EndInit();
+                        _cache.Add(filePath, bitmap);
+
+                        return bitmap;
+                    }
             }
 
             _log?.Verbose("reading Thumbnail from File via Shell");
@@ -61,30 +78,8 @@ public class FileInfoToImageSourceConverter : IValueConverter
         }
     }
 
-    BitmapImage ReadImage(string filePath)
-    {
-        _log?.Verbose("reading Image from known Image type");
-
-        // the following requirements must be met:
-
-        // - the file must not be blocked for the sake of moving and deleting
-        // - the file must not be cached for too, otherwise we quickly run out of memory.
-        //   (the build in caching is too long)
-    
-        using var fileStream = File.OpenRead(filePath);
-
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.StreamSource = fileStream;
-        bitmap.EndInit();
-        _cache.Add(filePath, bitmap);
-
-        return bitmap;
-    }
-
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value;
+        return System.Windows.Data.Binding.DoNothing;
     }
 }

@@ -59,6 +59,7 @@
                 DockPanel.Dock="Left"
                 VerticalAlignment="Stretch"
                 Content="Left"
+                Click="GoToPrevious"
                 Command="{Binding GoToPreviousCommand}"/>
 
             <Button 
@@ -67,6 +68,7 @@
                 DockPanel.Dock="Left"
                 VerticalAlignment="Stretch"
                 Content="Right"
+                Click="GoToNext"
                 Command="{Binding GoToNextCommand}"
                 />
 
